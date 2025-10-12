@@ -9,7 +9,7 @@ const recipes = await getCollection("recipes");
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>All Recipes - This Is How We Do It</title>
-  <link rel="stylesheet" href={`${import.meta.env.BASE_URL}styles.css`}>
+  <link rel="stylesheet" href={`${import.meta.env.BASE_URL}/styles.css`}>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
@@ -18,15 +18,15 @@ const recipes = await getCollection("recipes");
   <nav class="navbar">
     <div class="nav-container">
       <div class="nav-logo">
-        <a href={import.meta.env.BASE_URL}>
+        <a href={`${import.meta.env.BASE_URL}/`}>
           <i class="fas fa-utensils"></i>
           <span>This Is How We Do It</span>
         </a>
       </div>
       <div class="nav-menu" id="nav-menu">
-        <a href={import.meta.env.BASE_URL} class="nav-link">Home</a>
-        <a href={`${import.meta.env.BASE_URL}recipes`} class="nav-link active">All Recipes</a>
-        <a href={`${import.meta.env.BASE_URL}tips`} class="nav-link">Cooking Tips</a>
+        <a href={`${import.meta.env.BASE_URL}/`} class="nav-link">Home</a>
+        <a href={`${import.meta.env.BASE_URL}/recipes`} class="nav-link active">All Recipes</a>
+        <a href={`${import.meta.env.BASE_URL}/tips`} class="nav-link">Cooking Tips</a>
       </div>
       <div class="nav-toggle" id="nav-toggle">
         <span class="bar"></span>
@@ -90,9 +90,9 @@ const recipes = await getCollection("recipes");
         <div class="footer-section">
           <h4>Quick Links</h4>
           <ul>
-            <li><a href={import.meta.env.BASE_URL}>Home</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}recipes`}>All Recipes</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}tips`}>Cooking Tips</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}/`}>Home</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}/recipes`}>All Recipes</a></li>
+            <li><a href={`${import.meta.env.BASE_URL}/tips`}>Cooking Tips</a></li>
           </ul>
         </div>
       </div>
