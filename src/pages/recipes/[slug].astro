@@ -1,0 +1,104 @@
+---
+import { getCollection } from "astro:content";
+import RecipeLayout from "../../layouts/RecipeLayout.astro";
+import { render } from "astro:content";
+
+export async function getStaticPaths() {
+  const recipes = await getCollection("recipes");
+  return recipes.map(recipe => ({
+    params: { slug: recipe.slug },
+    props: { recipe },
+  }));
+}
+
+const { recipe } = Astro.props;
+const data = recipe.data;
+const { Content } = await render(recipe);
+---
+
+<RecipeLayout {...data}>
+  <div class="markdown-content">
+    <Content />
+  </div>
+</RecipeLayout>
+
+<style>
+  .markdown-content {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.7;
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(143, 188, 143, 0.2);
+  }
+
+  .markdown-content h1 {
+    display: none; /* Hide the h1 since it's in the layout */
+  }
+
+  .markdown-content h2 {
+    color: var(--primary-color, #8fbc8f);
+    font-size: 1.8rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--accent-color, #cd853f);
+    padding-bottom: 0.5rem;
+  }
+
+  .markdown-content h3 {
+    color: var(--accent-color, #cd853f);
+    font-size: 1.4rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .markdown-content h4 {
+    color: var(--primary-color, #8fbc8f);
+    font-size: 1.2rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .markdown-content ul,
+  .markdown-content ol {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+  }
+
+  .markdown-content li {
+    margin-bottom: 0.5rem;
+    position: relative;
+  }
+
+  .markdown-content ul li::marker {
+    color: #8fbc8f;
+  }
+
+  .markdown-content ol li::marker {
+    color: #cd853f;
+    font-weight: 600;
+  }
+
+  .markdown-content strong {
+    color: var(--primary-color, #8fbc8f);
+    font-weight: 600;
+  }
+
+  .markdown-content em {
+    color: var(--accent-color, #cd853f);
+    font-style: italic;
+  }
+
+  .markdown-content p {
+    margin-bottom: 1rem;
+  }
+
+  .markdown-content blockquote {
+    border-left: 4px solid var(--accent-color, #cd853f);
+    padding-left: 1rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--text-light, #666);
+  }
+</style>

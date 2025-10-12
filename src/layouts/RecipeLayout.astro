@@ -1,0 +1,217 @@
+---
+export interface Props {
+  title: string;
+  image?: string;
+  prepTime?: string;
+  cookTime?: string;
+  totalTime?: string;
+  servings?: string;
+  tags?: string[];
+  difficulty?: string;
+  temperature?: string;
+}
+
+const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty, temperature } = Astro.props;
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{title} - This Is How We Do It</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <a href="/">
+          <i class="fas fa-utensils"></i>
+          <span>This Is How We Do It</span>
+        </a>
+      </div>
+      <div class="nav-menu" id="nav-menu">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/recipes" class="nav-link">All Recipes</a>
+        <a href="/tips" class="nav-link">Cooking Tips</a>
+      </div>
+      <div class="nav-toggle" id="nav-toggle">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Recipe Detail Section -->
+  <section class="recipe-detail">
+    <div class="container">
+      <div class="recipe-header">
+        <h1>{title}</h1>
+        <div class="recipe-stats">
+          {prepTime && <span><i class="fas fa-clock"></i> {prepTime}</span>}
+          {cookTime && <span><i class="fas fa-fire"></i> {cookTime}</span>}
+          {servings && <span><i class="fas fa-users"></i> {servings}</span>}
+          {temperature && <span><i class="fas fa-thermometer-half"></i> {temperature}</span>}
+          {difficulty && <span><i class="fas fa-signal"></i> {difficulty}</span>}
+        </div>
+        {tags && tags.length > 0 && (
+          <div class="recipe-tags">
+            {tags.map(tag => (
+              <span class="tag">{tag}</span>
+            ))}
+          </div>
+        )}
+      </div>
+      
+      {image && (
+        <div class="recipe-image">
+          <img src={image} alt={title} />
+        </div>
+      )}
+      
+      <div class="recipe-content">
+        <slot />
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>This Is How We Do It</h3>
+          <p>Our family's digital cookbook and planning space</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/recipes">All Recipes</a></li>
+            <li><a href="/tips">Cooking Tips</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 This Is How We Do It. Made with ❤️ for family cooking.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/script.js" is:inline></script>
+</body>
+</html>
+
+<style>
+  .recipe-detail {
+    padding: 2rem 0;
+    min-height: 80vh;
+    margin-top: 80px;
+  }
+
+  .recipe-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .recipe-header h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color, #8fbc8f);
+    margin-bottom: 1rem;
+  }
+
+  .recipe-stats {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .recipe-stats span {
+    background: var(--accent-color, #cd853f);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .recipe-tags {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    background: var(--accent-color, #cd853f);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 500;
+  }
+
+  .recipe-image {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .recipe-image img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .recipe-content {
+    max-width: 800px;
+    margin: 0 auto;
+    line-height: 1.6;
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(143, 188, 143, 0.2);
+  }
+
+  .recipe-content h2 {
+    color: var(--primary-color, #8fbc8f);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .recipe-content h3 {
+    color: var(--accent-color, #cd853f);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .recipe-content ul,
+  .recipe-content ol {
+    margin-bottom: 1rem;
+  }
+
+  .recipe-content li {
+    margin-bottom: 0.5rem;
+  }
+
+  @media (max-width: 768px) {
+    .recipe-header h1 {
+      font-size: 2rem;
+    }
+    
+    .recipe-stats {
+      flex-direction: column;
+      align-items: center;
+    }
+  }
+</style>

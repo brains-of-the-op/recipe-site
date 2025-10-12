@@ -1,16 +1,745 @@
 ---
-
+import { getCollection } from "astro:content";
+const recipes = await getCollection("recipes");
 ---
 
+<!DOCTYPE html>
 <html lang="en">
 	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>This Is How We Do It - Family Recipes</title>
+  <link rel="stylesheet" href="/styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	</head>
 	<body>
-		<h1>Astro</h1>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-logo">
+        <a href="/">
+          <i class="fas fa-utensils"></i>
+          <span>This Is How We Do It</span>
+        </a>
+      </div>
+      <div class="nav-menu" id="nav-menu">
+        <a href="/" class="nav-link active">Home</a>
+        <a href="/recipes" class="nav-link">All Recipes</a>
+        <a href="/tips" class="nav-link">Cooking Tips</a>
+      </div>
+      <div class="nav-toggle" id="nav-toggle">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1 class="hero-title">This Is How We Do It 👨‍👩‍👧‍👦</h1>
+      <p class="hero-subtitle">Welcome to our family's shared repository for recipes, plans, and everything in between!</p>
+      <div class="hero-features">
+        <div class="feature" onclick="openRecipeModal()">
+          <i class="fas fa-book-open"></i>
+          <span>Document favorite recipes</span>
+        </div>
+        <div class="feature" onclick="openTipModal()">
+          <i class="fas fa-utensils"></i>
+          <span>Share cooking tips</span>
+        </div>
+        <div class="feature" onclick="openPlanningModal()">
+          <i class="fas fa-calendar"></i>
+          <span>Plan meals & events</span>
+        </div>
+        <div class="feature" onclick="openFeedbackModal()">
+          <i class="fas fa-lightbulb"></i>
+          <span>Track what works</span>
+        </div>
+      </div>
+      <a href="/recipes" class="cta-button">Explore Recipes</a>
+    </div>
+  </section>
+
+  <!-- Featured Recipes Section -->
+  <section class="featured-recipes">
+    <div class="container">
+      <h2 class="section-title">🍽️ Featured Recipes</h2>
+      <div class="recipes-grid">
+        {recipes.map(recipe => (
+          <a href={`/recipes/${recipe.slug}/`} class="recipe-card">
+            {recipe.data.image && (
+              <div class="recipe-image">
+                <img src={recipe.data.image} alt={recipe.data.title} />
+              </div>
+            )}
+            <div class="recipe-card-content">
+              <h3>{recipe.data.title}</h3>
+              <div class="recipe-stats">
+                {recipe.data.prepTime && <span><i class="fas fa-clock"></i> {recipe.data.prepTime}</span>}
+                {recipe.data.servings && <span><i class="fas fa-users"></i> {recipe.data.servings}</span>}
+                {recipe.data.difficulty && <span><i class="fas fa-signal"></i> {recipe.data.difficulty}</span>}
+              </div>
+              {recipe.data.tags && recipe.data.tags.length > 0 && (
+                <div class="recipe-tags">
+                  {recipe.data.tags.slice(0, 3).map(tag => (
+                    <span class="tag">{tag}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3>This Is How We Do It</h3>
+          <p>Our family's digital cookbook and planning space</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/recipes">All Recipes</a></li>
+            <li><a href="/tips">Cooking Tips</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 This Is How We Do It. Made with ❤️ for family cooking.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Recipe Submission Modal -->
+  <div id="recipeModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('recipeModal')">&times;</span>
+      <h2>🍽️ Share Your Recipe</h2>
+      <p>Help us grow our family cookbook! Fill out this form and we'll add your recipe to the site.</p>
+      <form id="recipeForm" data-form-type="recipe">
+        <div class="form-group">
+          <label for="recipeTitle">Recipe Name *</label>
+          <input type="text" id="recipeTitle" name="title" required placeholder="e.g., Grandma's Chocolate Chip Cookies">
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="prepTime">Prep Time</label>
+            <input type="text" id="prepTime" name="prepTime" placeholder="e.g., 15 min">
+          </div>
+          <div class="form-group">
+            <label for="cookTime">Cook Time</label>
+            <input type="text" id="cookTime" name="cookTime" placeholder="e.g., 25 min">
+          </div>
+        </div>
+        
+        <div class="form-row">
+          <div class="form-group">
+            <label for="servings">Servings</label>
+            <input type="text" id="servings" name="servings" placeholder="e.g., 4-6 people">
+          </div>
+          <div class="form-group">
+            <label for="difficulty">Difficulty</label>
+            <select id="difficulty" name="difficulty">
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label for="tags">Tags (comma-separated)</label>
+          <input type="text" id="tags" name="tags" placeholder="e.g., dessert, easy, chocolate">
+        </div>
+        
+        <div class="form-group">
+          <label for="ingredients">Ingredients *</label>
+          <textarea id="ingredients" name="ingredients" required rows="4" placeholder="List each ingredient on a new line:&#10;2 cups flour&#10;1 cup sugar&#10;3 eggs"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="instructions">Instructions *</label>
+          <textarea id="instructions" name="instructions" required rows="6" placeholder="Write step-by-step instructions:&#10;1. Preheat oven to 350°F&#10;2. Mix dry ingredients&#10;3. Add wet ingredients"></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="proTips">Pro Tips (optional)</label>
+          <textarea id="proTips" name="proTips" rows="3" placeholder="Share any special tips or variations..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="submitterName">Your Name</label>
+          <input type="text" id="submitterName" name="submitterName" placeholder="Who's sharing this recipe?">
+        </div>
+        
+        <button type="submit" class="submit-btn">Submit Recipe</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Tip Submission Modal -->
+  <div id="tipModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('tipModal')">&times;</span>
+      <h2>💡 Share a Cooking Tip</h2>
+      <p>Got a great cooking tip? Share it with the family!</p>
+      <form id="tipForm" data-form-type="tip">
+        <div class="form-group">
+          <label for="tipTitle">Tip Title *</label>
+          <input type="text" id="tipTitle" name="title" required placeholder="e.g., How to keep herbs fresh longer">
+        </div>
+        
+        <div class="form-group">
+          <label for="tipCategory">Category</label>
+          <select id="tipCategory" name="category">
+            <option value="general">General Cooking</option>
+            <option value="temperature">Temperature Guidelines</option>
+            <option value="substitutions">Substitutions</option>
+            <option value="tools">Kitchen Tools</option>
+            <option value="time-saving">Time-Saving</option>
+            <option value="holiday">Holiday Cooking</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="tipContent">Your Tip *</label>
+          <textarea id="tipContent" name="content" required rows="4" placeholder="Share your cooking wisdom..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="tipSubmitterName">Your Name</label>
+          <input type="text" id="tipSubmitterName" name="submitterName" placeholder="Who's sharing this tip?">
+        </div>
+        
+        <button type="submit" class="submit-btn">Submit Tip</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Planning Modal -->
+  <div id="planningModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('planningModal')">&times;</span>
+      <h2>📅 Plan Meals & Events</h2>
+      <p>Suggest a meal plan or cooking event for the family!</p>
+      <form id="planningForm" data-form-type="planning">
+        <div class="form-group">
+          <label for="planningType">Type</label>
+          <select id="planningType" name="type">
+            <option value="meal-plan">Weekly Meal Plan</option>
+            <option value="cooking-event">Cooking Event</option>
+            <option value="holiday-meal">Holiday Meal</option>
+            <option value="family-cooking">Family Cooking Session</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="planningTitle">Title *</label>
+          <input type="text" id="planningTitle" name="title" required placeholder="e.g., Thanksgiving 2025 Planning">
+        </div>
+        
+        <div class="form-group">
+          <label for="planningDate">Date</label>
+          <input type="date" id="planningDate" name="date">
+        </div>
+        
+        <div class="form-group">
+          <label for="planningDescription">Description *</label>
+          <textarea id="planningDescription" name="description" required rows="4" placeholder="Tell us about your meal plan or event idea..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="planningSubmitterName">Your Name</label>
+          <input type="text" id="planningSubmitterName" name="submitterName" placeholder="Who's planning this?">
+        </div>
+        
+        <button type="submit" class="submit-btn">Submit Planning Idea</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div id="feedbackModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('feedbackModal')">&times;</span>
+      <h2>🌟 Track What Works</h2>
+      <p>Share feedback about recipes, tips, or the site itself!</p>
+      <form id="feedbackForm" data-form-type="feedback">
+        <div class="form-group">
+          <label for="feedbackType">Type of Feedback</label>
+          <select id="feedbackType" name="type">
+            <option value="recipe-feedback">Recipe Feedback</option>
+            <option value="site-improvement">Site Improvement</option>
+            <option value="new-feature">New Feature Request</option>
+            <option value="bug-report">Bug Report</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="feedbackTitle">Title *</label>
+          <input type="text" id="feedbackTitle" name="title" required placeholder="e.g., Turkey recipe was perfect!">
+        </div>
+        
+        <div class="form-group">
+          <label for="feedbackContent">Your Feedback *</label>
+          <textarea id="feedbackContent" name="content" required rows="4" placeholder="Share your thoughts..."></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label for="feedbackSubmitterName">Your Name</label>
+          <input type="text" id="feedbackSubmitterName" name="submitterName" placeholder="Who's giving feedback?">
+        </div>
+        
+        <button type="submit" class="submit-btn">Submit Feedback</button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Make functions globally available
+    window.openRecipeModal = function() {
+      document.getElementById('recipeModal').style.display = 'block';
+    }
+    
+    window.openTipModal = function() {
+      document.getElementById('tipModal').style.display = 'block';
+    }
+    
+    window.openPlanningModal = function() {
+      document.getElementById('planningModal').style.display = 'block';
+    }
+    
+    window.openFeedbackModal = function() {
+      document.getElementById('feedbackModal').style.display = 'block';
+    }
+    
+    window.closeModal = function(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+    
+    // Initialize when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // Close modal when clicking outside
+      window.onclick = function(event) {
+        if (event.target.classList.contains('modal')) {
+          event.target.style.display = 'none';
+        }
+      }
+      
+      // Form submissions
+      const recipeForm = document.getElementById('recipeForm');
+      const tipForm = document.getElementById('tipForm');
+      const planningForm = document.getElementById('planningForm');
+      const feedbackForm = document.getElementById('feedbackForm');
+      
+      if (recipeForm) {
+        recipeForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          submitForm('recipe', this);
+        });
+      }
+      
+      if (tipForm) {
+        tipForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          submitForm('tip', this);
+        });
+      }
+      
+      if (planningForm) {
+        planningForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          submitForm('planning', this);
+        });
+      }
+      
+      if (feedbackForm) {
+        feedbackForm.addEventListener('submit', function(e) {
+          e.preventDefault();
+          submitForm('feedback', this);
+        });
+      }
+    });
+    
+    async function submitForm(type, form) {
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData);
+      data.type = type;
+      
+      // Show loading state
+      const submitBtn = form.querySelector('.submit-btn');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Submitting...';
+      submitBtn.disabled = true;
+      
+      try {
+        // Submit to our API endpoint
+        const response = await fetch('/api/submit-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Show success message
+          alert(result.message);
+          
+          // Close modal and reset form
+          form.closest('.modal').style.display = 'none';
+          form.reset();
+        } else {
+          throw new Error(result.error || 'Submission failed');
+        }
+      } catch (error) {
+        console.error('Submission error:', error);
+        alert('Sorry, there was an error submitting your form. Please try again or contact the family directly.');
+      } finally {
+        // Reset button state
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    }
+  </script>
+  <script src="/script.js" is:inline></script>
 	</body>
 </html>
+
+<style>
+  .hero {
+    background: #f0f8f0;
+    color: #5d4037;
+    padding: 6rem 0 4rem 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    margin-top: 80px;
+    border-bottom: 1px solid rgba(143, 188, 143, 0.2);
+  }
+
+  .hero-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 2rem;
+  }
+
+  .hero-title {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+  }
+
+  .hero-subtitle {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+
+  .hero-features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+  }
+
+  .feature {
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .feature:hover {
+    transform: translateY(-3px);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 0.5rem;
+  }
+
+  .feature i {
+    font-size: 1.2rem;
+    color: #8fbc8f;
+  }
+
+  .cta-button {
+    display: inline-block;
+    background: #8fbc8f;
+    color: white;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(143, 188, 143, 0.3);
+  }
+
+  .cta-button:hover {
+    background: #7ba87b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(143, 188, 143, 0.4);
+  }
+
+  .featured-recipes {
+    padding: 4rem 0;
+  }
+
+  .section-title {
+    text-align: center;
+    font-size: 2.5rem;
+    color: #8fbc8f;
+    margin-bottom: 3rem;
+    font-weight: 600;
+  }
+
+  .recipes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .recipe-card {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.3s ease;
+    border: 1px solid rgba(143, 188, 143, 0.2);
+    position: relative;
+  }
+
+  .recipe-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #8fbc8f, #d2b48c);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .recipe-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: rgba(143, 188, 143, 0.4);
+  }
+
+  .recipe-card:hover::before {
+    opacity: 1;
+  }
+
+  .recipe-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+  }
+
+  .recipe-card-content {
+    padding: 1.5rem;
+  }
+
+  .recipe-card-content h3 {
+    font-size: 1.3rem;
+    color: #8fbc8f;
+    margin-bottom: 1rem;
+  }
+
+  .recipe-stats {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .recipe-stats span {
+    background: #cd853f;
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .recipe-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    background: #f5e6d3;
+    color: #5d4037;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
+  /* Modal Styles */
+  .modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+  }
+
+  .modal-content {
+    background-color: white;
+    margin: 5% auto;
+    padding: 2rem;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    position: relative;
+  }
+
+  .close {
+    position: absolute;
+    right: 1rem;
+    top: 1rem;
+    font-size: 2rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #8fbc8f;
+    transition: color 0.3s ease;
+  }
+
+  .close:hover {
+    color: #cd853f;
+  }
+
+  .modal-content h2 {
+    color: #8fbc8f;
+    margin-bottom: 0.5rem;
+    font-size: 1.8rem;
+  }
+
+  .modal-content p {
+    color: #5d4037;
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  /* Form Styles */
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #5d4037;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e8dcc6;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.3s ease;
+    background: white;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: #8fbc8f;
+    box-shadow: 0 0 0 3px rgba(143, 188, 143, 0.1);
+  }
+
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+
+  .submit-btn {
+    background: #8fbc8f;
+    color: white;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+  }
+
+  .submit-btn:hover {
+    background: #7ba87b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(143, 188, 143, 0.3);
+  }
+
+  @media (max-width: 768px) {
+    .hero-title {
+      font-size: 2rem;
+    }
+    
+    .hero-features {
+      grid-template-columns: 1fr;
+    }
+    
+    .recipes-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+      margin: 10% auto;
+      width: 95%;
+      padding: 1.5rem;
+    }
+
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<script is:inline src="/form-handler.js"></script>
