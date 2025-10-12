@@ -5,6 +5,8 @@ class FormHandler {
   constructor() {
     this.githubOwner = 'brains-of-the-op';
     this.githubRepo = 'tihwdi-replies';
+    // GitHub token will be set via environment variable or fallback to redirect method
+    this.githubToken = null;
     this.init();
   }
 
@@ -49,10 +51,25 @@ class FormHandler {
         data.submitterName = data.name;
       }
 
-      // Create GitHub Issue URL with pre-filled template (no auth required!)
-      const issueUrl = this.createGitHubIssueUrl(formType, data);
+      // Try to create GitHub issue directly via API, fallback to redirect
+      if (this.githubToken) {
+        const result = await this.createGitHubIssue(formType, data);
+        
+        if (result.success) {
+          // Show success message with link to the created issue
+          this.showSuccessMessage(form, formType, result.issueUrl);
+          
+          // Close modal and reset form
+          form.closest('.modal').style.display = 'none';
+          form.reset();
+          return;
+        } else {
+          console.warn('API failed, falling back to redirect method');
+        }
+      }
       
-      // Open GitHub in new tab with pre-filled issue
+      // Fallback: Use redirect method (no token or API failed)
+      const issueUrl = this.createGitHubIssueUrl(formType, data);
       window.open(issueUrl, '_blank');
       
       // Show success message
@@ -71,6 +88,73 @@ class FormHandler {
         submitButton.textContent = 'Submit';
         submitButton.disabled = false;
       }
+    }
+  }
+
+  async createGitHubIssue(type, data) {
+    let title, body, labels;
+
+    switch (type) {
+      case 'recipe':
+        title = `🍽️ New Recipe: ${data.title}`;
+        body = this.createRecipeIssueBody(data);
+        labels = ['recipe', 'new-content'];
+        break;
+      
+      case 'tip':
+        title = `💡 Cooking Tip: ${data.title}`;
+        body = this.createTipIssueBody(data);
+        labels = ['tip', 'new-content'];
+        break;
+      
+      case 'planning':
+        title = `📅 ${data.type}: ${data.title}`;
+        body = this.createPlanningIssueBody(data);
+        labels = ['planning', 'family-coordination'];
+        break;
+      
+      case 'feedback':
+        title = `🌟 ${data.type}: ${data.title}`;
+        body = this.createFeedbackIssueBody(data);
+        labels = ['feedback', 'improvement'];
+        break;
+      
+      default:
+        throw new Error('Invalid form type');
+    }
+
+    try {
+      // Use GitHub's API to create the issue directly
+      const response = await fetch(`https://api.github.com/repos/${this.githubOwner}/${this.githubRepo}/issues`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+          'Authorization': `token ${this.githubToken}`
+        },
+        body: JSON.stringify({
+          title: title,
+          body: body,
+          labels: labels
+        })
+      });
+
+      if (!response.ok) {
+        const error = await response.text();
+        console.error('GitHub API Error:', error);
+        return { success: false, error: 'Failed to create GitHub issue' };
+      }
+
+      const issue = await response.json();
+      return { 
+        success: true, 
+        issueUrl: issue.html_url,
+        issueNumber: issue.number
+      };
+
+    } catch (error) {
+      console.error('API Error:', error);
+      return { success: false, error: 'Network error occurred' };
     }
   }
 
@@ -195,12 +279,12 @@ ${data.content}
 *This feedback was submitted through the family recipe site. Please review and take action if needed!*`;
   }
 
-  showSuccessMessage(form, type) {
+  showSuccessMessage(form, type, issueUrl) {
     const messages = {
-      recipe: 'Recipe submitted! Please complete your submission on GitHub.',
-      tip: 'Tip submitted! Please complete your submission on GitHub.',
-      planning: 'Planning suggestion submitted! Please complete your submission on GitHub.',
-      feedback: 'Feedback submitted! Please complete your submission on GitHub.'
+      recipe: 'Recipe submitted successfully! A GitHub issue has been created.',
+      tip: 'Tip submitted successfully! A GitHub issue has been created.',
+      planning: 'Planning suggestion submitted successfully! A GitHub issue has been created.',
+      feedback: 'Feedback submitted successfully! A GitHub issue has been created.'
     };
 
     const message = messages[type] || 'Form submitted successfully!';
@@ -218,18 +302,19 @@ ${data.content}
         border: 1px solid #c3e6cb;
       ">
         ✅ ${message}
+        ${issueUrl ? `<br><a href="${issueUrl}" target="_blank" style="color: #155724; text-decoration: underline; font-weight: 600;">View the issue on GitHub</a>` : ''}
       </div>
     `;
     
     // Insert after form
     form.parentNode.insertBefore(successDiv, form.nextSibling);
     
-    // Remove after 5 seconds
+    // Remove after 8 seconds (longer since there's a link)
     setTimeout(() => {
       if (successDiv.parentNode) {
         successDiv.parentNode.removeChild(successDiv);
       }
-    }, 5000);
+    }, 8000);
   }
 
   showErrorMessage(form) {
