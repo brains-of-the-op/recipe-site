@@ -37,12 +37,6 @@ class FormHandler {
       const originalText = submitButton.textContent;
       submitButton.textContent = 'Submitting...';
       submitButton.disabled = true;
-      
-      // Reset after 3 seconds if something goes wrong
-      setTimeout(() => {
-        submitButton.textContent = originalText;
-        submitButton.disabled = false;
-      }, 3000);
     }
 
     try {
@@ -55,14 +49,18 @@ class FormHandler {
         data.submitterName = data.name;
       }
 
-      // Create GitHub issue URL
+      // Create GitHub Issue URL with pre-filled template (no auth required!)
       const issueUrl = this.createGitHubIssueUrl(formType, data);
       
-      // Redirect to GitHub
+      // Open GitHub in new tab with pre-filled issue
       window.open(issueUrl, '_blank');
       
       // Show success message
       this.showSuccessMessage(form, formType);
+      
+      // Close modal and reset form
+      form.closest('.modal').style.display = 'none';
+      form.reset();
       
     } catch (error) {
       console.error('Form submission error:', error);
