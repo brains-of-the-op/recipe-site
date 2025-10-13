@@ -14,70 +14,31 @@ const { title, prepTime, cookTime, totalTime, servings, slug } = Astro.props;
 function parseTimeToMinutes(timeStr: string): number {
   if (!timeStr) return 0;
   
-  const match = timeStr.match(/(\d+)\s*(min|hour|hr|h)/i);
-  if (!match) return 0;
+  // Handle formats like "60 min", "5 hours", "1.5 hours", etc.
+  const hourMatch = timeStr.match(/(\d+(?:\.\d+)?)\s*(?:hour|hr|h)/i);
+  const minMatch = timeStr.match(/(\d+)\s*min/i);
   
-  const value = parseInt(match[1]);
-  const unit = match[2].toLowerCase();
+  let totalMin = 0;
+  if (hourMatch) {
+    totalMin += parseFloat(hourMatch[1]) * 60;
+  }
+  if (minMatch) {
+    totalMin += parseInt(minMatch[1]);
+  }
   
-  if (unit === 'min') return value;
-  if (unit === 'hour' || unit === 'hr' || unit === 'h') return value * 60;
-  
-  return 0;
+  return totalMin;
 }
 
 const prepMinutes = prepTime ? parseTimeToMinutes(prepTime) : 0;
 const cookMinutes = cookTime ? parseTimeToMinutes(cookTime) : 0;
-const totalMinutes = totalTime ? parseTimeToMinutes(totalTime) : 0;
+const serveMinutes = 30; // Fixed 30 minutes for serving
 
-// Generate timeline events
-function generateTimelineEvents() {
-  const events = [];
-  const now = new Date();
-  
-  // Start time (user can adjust this)
-  const startTime = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
-  
-  // Prep phase
-  if (prepMinutes > 0) {
-    events.push({
-      title: `Prep: ${title}`,
-      start: startTime,
-      end: new Date(startTime.getTime() + prepMinutes * 60 * 1000),
-      description: `Preparation time for ${title}. Gather ingredients and prep as needed.`,
-      type: 'prep'
-    });
-  }
-  
-  // Cooking phase
-  if (cookMinutes > 0) {
-    const cookStart = prepMinutes > 0 ? 
-      new Date(startTime.getTime() + prepMinutes * 60 * 1000) : 
-      startTime;
-    
-    events.push({
-      title: `Cook: ${title}`,
-      start: cookStart,
-      end: new Date(cookStart.getTime() + cookMinutes * 60 * 1000),
-      description: `Active cooking time for ${title}. Follow recipe instructions.`,
-      type: 'cook'
-    });
-  }
-  
-  // Serving time
-  const serveTime = new Date(startTime.getTime() + (prepMinutes + cookMinutes) * 60 * 1000);
-  events.push({
-    title: `Serve: ${title}`,
-    start: serveTime,
-    end: new Date(serveTime.getTime() + 30 * 60 * 1000), // 30 min serving window
-    description: `Time to serve ${title}! ${servings ? `Serves ${servings}.` : ''}`,
-    type: 'serve'
-  });
-  
-  return events;
-}
-
-const timelineEvents = generateTimelineEvents();
+// Store durations for JavaScript (in milliseconds)
+const durations = {
+  prep: prepMinutes * 60 * 1000,
+  cook: cookMinutes * 60 * 1000,
+  serve: serveMinutes * 60 * 1000
+};
 ---
 
 <div class="calendar-integration">
@@ -86,169 +47,275 @@ const timelineEvents = generateTimelineEvents();
     <p>Add this recipe to your calendar to plan your cooking schedule</p>
   </div>
   
-  <div class="timeline-preview">
-    <h4>Your Cooking Timeline:</h4>
-    <div class="timeline-events">
-      {timelineEvents.map((event, index) => (
-        <div class={`timeline-event ${event.type}`}>
-          <div class="event-time">
-            {event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
-            {event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </div>
-          <div class="event-title">{event.title}</div>
-          <div class="event-description">{event.description}</div>
-        </div>
-      ))}
+  <div class="calendar-actions">
+    <div class="date-time-selector">
+      <div>
+        <label for="cooking-date">Choose your cooking date:</label>
+        <input type="date" id="cooking-date" name="cooking-date" />
+      </div>
+      
+      <div>
+        <label for="cooking-time">Start time:</label>
+        <input type="time" id="cooking-time" name="cooking-time" />
+      </div>
     </div>
   </div>
   
-  <div class="calendar-actions">
-    <div class="date-time-selector">
-      <label for="cooking-date">Choose your cooking date:</label>
-      <input type="date" id="cooking-date" name="cooking-date" />
-      
-      <label for="cooking-time">Start time:</label>
-      <input type="time" id="cooking-time" name="cooking-time" />
+  <div class="timeline-preview">
+    <h4>Your Cooking Timeline:</h4>
+    <div class="timeline-events" id="timeline-events">
+      <!-- Will be populated by JavaScript -->
     </div>
+  </div>
+  
+  <div class="calendar-buttons">
+    <button class="calendar-btn google-calendar" onclick="window.addToGoogleCalendar()">
+      <i class="fab fa-google"></i>
+      Add to Google Calendar
+    </button>
     
-    <div class="calendar-buttons">
-      <button class="calendar-btn google-calendar" onclick="addToGoogleCalendar()">
-        <i class="fab fa-google"></i>
-        Add to Google Calendar
-      </button>
-      
-      <button class="calendar-btn apple-calendar" onclick="downloadICSFile()">
-        <i class="fab fa-apple"></i>
-        Add to Apple Calendar
-      </button>
-    </div>
+    <button class="calendar-btn apple-calendar" onclick="window.downloadICSFile()">
+      <i class="fab fa-apple"></i>
+      Add to Apple Calendar
+    </button>
   </div>
 </div>
 
-<script is:inline define:vars={{ timelineEvents, slug, title }}>
-  // Store timeline events for JavaScript access
-  window.timelineEvents = timelineEvents;
-  window.recipeSlug = slug;
-  window.recipeTitle = title;
+<script is:inline define:vars={{ title, slug, durations, prepMinutes, cookMinutes, serveMinutes }}>
+  // Store recipe data
+  window.recipeData = {
+    title: title,
+    slug: slug,
+    durations: durations,
+    prepMinutes: prepMinutes,
+    cookMinutes: cookMinutes,
+    serveMinutes: serveMinutes
+  };
 
   function getSelectedDateTime() {
     const dateInput = document.getElementById('cooking-date');
     const timeInput = document.getElementById('cooking-time');
     
-    // Default to tomorrow at 6 PM if not set
-    const defaultDate = new Date();
-    defaultDate.setDate(defaultDate.getDate() + 1);
-    defaultDate.setHours(18, 0, 0, 0);
+    if (!dateInput || !timeInput) return null;
     
-    const selectedDate = dateInput.value ? new Date(dateInput.value) : defaultDate;
-    const selectedTime = timeInput.value ? timeInput.value.split(':') : ['18', '00'];
+    const selectedDate = dateInput.value;
+    const selectedTime = timeInput.value;
     
-    selectedDate.setHours(parseInt(selectedTime[0]), parseInt(selectedTime[1]), 0, 0);
+    if (!selectedDate || !selectedTime) return null;
     
-    return selectedDate;
+    // Combine date and time
+    const dateTime = new Date(selectedDate + 'T' + selectedTime);
+    return dateTime;
+  }
+
+  function formatTime(date) {
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
   }
 
   function updateTimelinePreview() {
     const startTime = getSelectedDateTime();
-    const events = window.timelineEvents;
+    if (!startTime) return;
     
-    // Update timeline display with new times
-    const eventElements = document.querySelectorAll('.timeline-event');
-    eventElements.forEach((element, index) => {
-      if (index < events.length) {
-        const event = events[index];
-        const eventStart = new Date(startTime.getTime() + (index > 0 ? 
-          events.slice(0, index).reduce((sum, e) => sum + (e.end.getTime() - e.start.getTime()), 0) : 0));
-        const eventEnd = new Date(eventStart.getTime() + (event.end.getTime() - event.start.getTime()));
-        
-        const timeElement = element.querySelector('.event-time');
-        timeElement.textContent = `${eventStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${eventEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
-      }
+    const data = window.recipeData;
+    const eventsContainer = document.getElementById('timeline-events');
+    if (!eventsContainer) return;
+    
+    let currentTime = new Date(startTime);
+    const events = [];
+    
+    // Prep event
+    if (data.prepMinutes > 0) {
+      const prepEnd = new Date(currentTime.getTime() + data.durations.prep);
+      events.push({
+        type: 'prep',
+        title: `Prep: ${data.title}`,
+        start: new Date(currentTime),
+        end: prepEnd,
+        description: `Preparation time for ${data.title}. Gather ingredients and prep as needed.`
+      });
+      currentTime = prepEnd;
+    }
+    
+    // Cook event
+    if (data.cookMinutes > 0) {
+      const cookEnd = new Date(currentTime.getTime() + data.durations.cook);
+      events.push({
+        type: 'cook',
+        title: `Cook: ${data.title}`,
+        start: new Date(currentTime),
+        end: cookEnd,
+        description: `Active cooking time for ${data.title}. Follow recipe instructions.`
+      });
+      currentTime = cookEnd;
+    }
+    
+    // Serve event
+    const serveEnd = new Date(currentTime.getTime() + data.durations.serve);
+    events.push({
+      type: 'serve',
+      title: `Serve: ${data.title}`,
+      start: new Date(currentTime),
+      end: serveEnd,
+      description: `Time to serve ${data.title}!`
     });
+    
+    // Store events globally
+    window.timelineEvents = events;
+    
+    // Render timeline
+    eventsContainer.innerHTML = events.map(event => `
+      <div class="timeline-event ${event.type}">
+        <div class="event-time">
+          ${formatTime(event.start)} - ${formatTime(event.end)}
+        </div>
+        <div class="event-title">${event.title}</div>
+        <div class="event-description">${event.description}</div>
+      </div>
+    `).join('');
   }
 
-  // Update timeline when date/time changes
-  document.addEventListener('DOMContentLoaded', function() {
-    const dateInput = document.getElementById('cooking-date');
-    const timeInput = document.getElementById('cooking-time');
-    
-    if (dateInput) dateInput.addEventListener('change', updateTimelinePreview);
-    if (timeInput) timeInput.addEventListener('change', updateTimelinePreview);
-    
-    // Set default date to tomorrow
-    const tomorrow = new Date();
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    dateInput.value = tomorrow.toISOString().split('T')[0];
-    timeInput.value = '18:00';
-  });
-
-  window.addToGoogleCalendar = async function() {
-    const startTime = getSelectedDateTime();
-    const events = window.timelineEvents;
-    
-    try {
-      // Create events for each phase
-      for (const event of events) {
-        const eventStart = new Date(startTime.getTime() + (events.indexOf(event) > 0 ? 
-          events.slice(0, events.indexOf(event)).reduce((sum, e) => sum + (e.end.getTime() - e.start.getTime()), 0) : 0));
-        const eventEnd = new Date(eventStart.getTime() + (event.end.getTime() - event.start.getTime()));
-        
-        const googleEvent = {
-          summary: event.title,
-          description: event.description,
-          start: {
-            dateTime: eventStart.toISOString(),
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-          },
-          end: {
-            dateTime: eventEnd.toISOString(),
-            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
-          }
-        };
-        
-        const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(googleEvent.summary)}&dates=${eventStart.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${eventEnd.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(googleEvent.description)}`;
-        
-        window.open(googleUrl, '_blank');
-      }
-    } catch (error) {
-      console.error('Error adding to Google Calendar:', error);
-      alert('Error adding to Google Calendar. Please try again.');
-    }
+  function formatICSDate(date) {
+    // Format: YYYYMMDDTHHmmss in local time
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    const seconds = String(date.getSeconds()).padStart(2, '0');
+    return `${year}${month}${day}T${hours}${minutes}${seconds}`;
   }
 
   window.downloadICSFile = function() {
-    const startTime = getSelectedDateTime();
     const events = window.timelineEvents;
+    if (!events || events.length === 0) {
+      alert('Please select a date and time first');
+      return;
+    }
+    
+    const data = window.recipeData;
+    const recipeUrl = `https://brains-of-the-op.github.io/recipe-site/recipes/${data.slug}/`;
     
     let icsContent = 'BEGIN:VCALENDAR\r\n';
+    icsContent += 'PRODID:-//brains-of-the-op.github.io//Recipes//EN\r\n';
     icsContent += 'VERSION:2.0\r\n';
-    icsContent += 'PRODID:-//Recipe Site//Cooking Timeline//EN\r\n';
     icsContent += 'CALSCALE:GREGORIAN\r\n';
+    icsContent += 'METHOD:PUBLISH\r\n';
     
+    // Add timezone for America/Edmonton
+    icsContent += 'BEGIN:VTIMEZONE\r\n';
+    icsContent += 'TZID:America/Edmonton\r\n';
+    icsContent += 'X-LIC-LOCATION:America/Edmonton\r\n';
+    icsContent += 'BEGIN:STANDARD\r\n';
+    icsContent += 'TZOFFSETFROM:-0600\r\n';
+    icsContent += 'TZOFFSETTO:-0700\r\n';
+    icsContent += 'TZNAME:MST\r\n';
+    icsContent += 'DTSTART:19701101T020000\r\n';
+    icsContent += 'RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU\r\n';
+    icsContent += 'END:STANDARD\r\n';
+    icsContent += 'BEGIN:DAYLIGHT\r\n';
+    icsContent += 'TZOFFSETFROM:-0700\r\n';
+    icsContent += 'TZOFFSETTO:-0600\r\n';
+    icsContent += 'TZNAME:MDT\r\n';
+    icsContent += 'DTSTART:19700308T020000\r\n';
+    icsContent += 'RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU\r\n';
+    icsContent += 'END:DAYLIGHT\r\n';
+    icsContent += 'END:VTIMEZONE\r\n';
+    
+    // Add events
     events.forEach((event, index) => {
-      const eventStart = new Date(startTime.getTime() + (index > 0 ? 
-        events.slice(0, index).reduce((sum, e) => sum + (e.end.getTime() - e.start.getTime()), 0) : 0));
-      const eventEnd = new Date(eventStart.getTime() + (event.end.getTime() - event.start.getTime()));
+      const eventType = event.type;
+      const uid = `${data.slug}-${eventType}@brains-of-the-op.github.io`;
       
       icsContent += 'BEGIN:VEVENT\r\n';
-      icsContent += `UID:${Date.now()}-${index}@recipe-site.com\r\n`;
-      icsContent += `DTSTART:${eventStart.toISOString().replace(/[-:]/g, '').split('.')[0]}Z\r\n`;
-      icsContent += `DTEND:${eventEnd.toISOString().replace(/[-:]/g, '').split('.')[0]}Z\r\n`;
+      icsContent += `UID:${uid}\r\n`;
+      icsContent += `DTSTAMP:${formatICSDate(new Date())}Z\r\n`;
       icsContent += `SUMMARY:${event.title}\r\n`;
-      icsContent += `DESCRIPTION:${event.description.replace(/\r?\n/g, '\\n')}\r\n`;
+      icsContent += `DESCRIPTION:${event.description}\\n${recipeUrl}\r\n`;
+      icsContent += `URL:${recipeUrl}\r\n`;
+      icsContent += `DTSTART;TZID=America/Edmonton:${formatICSDate(event.start)}\r\n`;
+      icsContent += `DTEND;TZID=America/Edmonton:${formatICSDate(event.end)}\r\n`;
+      icsContent += 'SEQUENCE:0\r\n';
+      
+      // Add alarm reminders
+      if (eventType === 'prep') {
+        icsContent += 'BEGIN:VALARM\r\n';
+        icsContent += 'TRIGGER:-PT15M\r\n';
+        icsContent += 'ACTION:DISPLAY\r\n';
+        icsContent += 'DESCRIPTION:Prep starts soon\r\n';
+        icsContent += 'END:VALARM\r\n';
+      } else if (eventType === 'cook') {
+        icsContent += 'BEGIN:VALARM\r\n';
+        icsContent += 'TRIGGER:-PT5M\r\n';
+        icsContent += 'ACTION:DISPLAY\r\n';
+        icsContent += 'DESCRIPTION:Start cooking\r\n';
+        icsContent += 'END:VALARM\r\n';
+      } else if (eventType === 'serve') {
+        icsContent += 'BEGIN:VALARM\r\n';
+        icsContent += 'TRIGGER:-PT5M\r\n';
+        icsContent += 'ACTION:DISPLAY\r\n';
+        icsContent += 'DESCRIPTION:Serve soon\r\n';
+        icsContent += 'END:VALARM\r\n';
+      }
+      
       icsContent += 'END:VEVENT\r\n';
     });
     
     icsContent += 'END:VCALENDAR\r\n';
     
+    // Download file
     const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `${window.recipeTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_cooking_timeline.ics`;
+    link.download = `${data.slug}-cooking-timeline.ics`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   }
+
+  window.addToGoogleCalendar = function() {
+    const events = window.timelineEvents;
+    if (!events || events.length === 0) {
+      alert('Please select a date and time first');
+      return;
+    }
+    
+    // Open Google Calendar for each event
+    events.forEach(event => {
+      const startISO = event.start.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const endISO = event.end.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      
+      const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startISO}/${endISO}&details=${encodeURIComponent(event.description)}`;
+      
+      window.open(googleUrl, '_blank');
+    });
+  }
+
+  // Initialize on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('cooking-date');
+    const timeInput = document.getElementById('cooking-time');
+    
+    if (!dateInput || !timeInput) return;
+    
+    // Set default to tomorrow at 6:00 PM
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(18, 0, 0, 0);
+    
+    dateInput.value = tomorrow.toISOString().split('T')[0];
+    timeInput.value = '18:00';
+    
+    // Add event listeners
+    dateInput.addEventListener('change', updateTimelinePreview);
+    timeInput.addEventListener('change', updateTimelinePreview);
+    
+    // Initial render
+    updateTimelinePreview();
+  });
 </script>
 
 <style>
@@ -279,6 +346,37 @@ const timelineEvents = generateTimelineEvents();
   .calendar-header p {
     color: var(--text-light, #666);
     margin: 0;
+  }
+
+  .calendar-actions {
+    margin-bottom: 2rem;
+  }
+
+  .date-time-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+
+  .date-time-selector label {
+    display: block;
+    font-weight: 500;
+    color: var(--text-dark, #333);
+    margin-bottom: 0.5rem;
+  }
+
+  .date-time-selector input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+
+  .date-time-selector input:focus {
+    outline: none;
+    border-color: var(--primary-color, #8fbc8f);
   }
 
   .timeline-preview {
@@ -332,39 +430,6 @@ const timelineEvents = generateTimelineEvents();
   .event-description {
     color: var(--text-light, #666);
     font-size: 0.9rem;
-  }
-
-  .calendar-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-
-  .date-time-selector {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    align-items: end;
-  }
-
-  .date-time-selector label {
-    display: block;
-    font-weight: 500;
-    color: var(--text-dark, #333);
-    margin-bottom: 0.5rem;
-  }
-
-  .date-time-selector input {
-    padding: 0.75rem;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 1rem;
-    transition: border-color 0.3s ease;
-  }
-
-  .date-time-selector input:focus {
-    outline: none;
-    border-color: var(--primary-color, #8fbc8f);
   }
 
   .calendar-buttons {

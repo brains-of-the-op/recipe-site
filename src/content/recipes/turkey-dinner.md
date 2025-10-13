@@ -1,8 +1,8 @@
 ---
 title: "Butter-Herb Turkey Dinner"
-prepTime: "45 min"
-cookTime: "4-5 hours"
-totalTime: "5-6 hours"
+prepTime: "60 min"
+cookTime: "5 hours"
+totalTime: "6.5 hours"
 servings: "6-10 people"
 tags: ["turkey", "holiday", "main course", "traditional"]
 difficulty: "Medium"
