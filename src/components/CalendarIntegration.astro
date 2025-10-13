@@ -133,8 +133,8 @@ const durations = {
       events.push({
         type: 'prep',
         title: `Prep: ${data.title}`,
-        start: new Date(currentTime),
-        end: prepEnd,
+        startTime: currentTime.getTime(),
+        endTime: prepEnd.getTime(),
         description: `Preparation time for ${data.title}. Gather ingredients and prep as needed.`
       });
       currentTime = prepEnd;
@@ -146,8 +146,8 @@ const durations = {
       events.push({
         type: 'cook',
         title: `Cook: ${data.title}`,
-        start: new Date(currentTime),
-        end: cookEnd,
+        startTime: currentTime.getTime(),
+        endTime: cookEnd.getTime(),
         description: `Active cooking time for ${data.title}. Follow recipe instructions.`
       });
       currentTime = cookEnd;
@@ -158,8 +158,8 @@ const durations = {
     events.push({
       type: 'serve',
       title: `Serve: ${data.title}`,
-      start: new Date(currentTime),
-      end: serveEnd,
+      startTime: currentTime.getTime(),
+      endTime: serveEnd.getTime(),
       description: `Time to serve ${data.title}!`
     });
     
@@ -170,7 +170,7 @@ const durations = {
     eventsContainer.innerHTML = events.map(event => `
       <div class="timeline-event ${event.type}">
         <div class="event-time">
-          ${formatTime(event.start)} - ${formatTime(event.end)}
+          ${formatTime(new Date(event.startTime))} - ${formatTime(new Date(event.endTime))}
         </div>
         <div class="event-title">${event.title}</div>
         <div class="event-description">${event.description}</div>
@@ -229,6 +229,8 @@ const durations = {
     events.forEach((event, index) => {
       const eventType = event.type;
       const uid = `${data.slug}-${eventType}@brains-of-the-op.github.io`;
+      const eventStart = new Date(event.startTime);
+      const eventEnd = new Date(event.endTime);
       
       icsContent += 'BEGIN:VEVENT\r\n';
       icsContent += `UID:${uid}\r\n`;
@@ -236,8 +238,8 @@ const durations = {
       icsContent += `SUMMARY:${event.title}\r\n`;
       icsContent += `DESCRIPTION:${event.description}\\n${recipeUrl}\r\n`;
       icsContent += `URL:${recipeUrl}\r\n`;
-      icsContent += `DTSTART;TZID=America/Edmonton:${formatICSDate(event.start)}\r\n`;
-      icsContent += `DTEND;TZID=America/Edmonton:${formatICSDate(event.end)}\r\n`;
+      icsContent += `DTSTART;TZID=America/Edmonton:${formatICSDate(eventStart)}\r\n`;
+      icsContent += `DTEND;TZID=America/Edmonton:${formatICSDate(eventEnd)}\r\n`;
       icsContent += 'SEQUENCE:0\r\n';
       
       // Add alarm reminders
@@ -285,8 +287,11 @@ const durations = {
     
     // Open Google Calendar for each event
     events.forEach(event => {
-      const startISO = event.start.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
-      const endISO = event.end.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const eventStart = new Date(event.startTime);
+      const eventEnd = new Date(event.endTime);
+      
+      const startISO = eventStart.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+      const endISO = eventEnd.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
       
       const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${startISO}/${endISO}&details=${encodeURIComponent(event.description)}`;
       
