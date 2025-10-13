@@ -253,7 +253,10 @@ npm run build
 - ✅ **Easy Content Management**: Just edit Markdown files
 - ✅ **Automatic Navigation**: New recipes appear automatically
 - ✅ **Tag System**: Organize recipes by categories
-- ✅ **Search Ready**: Easy to add search functionality later
+- ✅ **Calendar Integration**: Add recipes to Google Calendar or Apple Calendar
+- ✅ **Interactive Timeline**: Visual cooking schedule with prep/cook/serve phases
+- ✅ **GitHub Forms**: Family members can submit recipes and tips via forms
+- ✅ **PR Preview Workflows**: Test changes before deploying to production
 
 ## 🎯 Tips for Great Recipes
 
@@ -341,20 +344,23 @@ Here are exciting features we're planning to add to make your recipe site even m
 - [ ] Seasonal recipe recommendations
 - [ ] Family cooking schedule
 
-### 📅 **Calendar Integration**
+### 📅 **Calendar Integration** ✅ **COMPLETED!**
 
 #### **Cooking Timeline Integration**
-- [ ] Add recipes to your calendar with prep times
-- [ ] Automatic scheduling based on cooking duration
-- [ ] Holiday meal planning with timeline
-- [ ] Family cooking schedule coordination
-- [ ] Recipe reminders and notifications
+- ✅ Add recipes to your calendar with prep times
+- ✅ Automatic scheduling based on cooking duration
+- ✅ Holiday meal planning with timeline
+- ✅ Google Calendar integration (one-click add)
+- ✅ Apple Calendar integration (ICS file download)
+- ✅ Interactive date/time picker for scheduling
+- ✅ Real-time timeline preview with cooking phases
 
-#### **Advanced Planning**
+#### **Advanced Planning (Future)**
 - [ ] Seasonal cooking calendar
 - [ ] Family cooking assignments
 - [ ] Special occasion planning
 - [ ] Cooking event coordination
+- [ ] Recipe reminders and notifications
 
 ### 🚀 **Implementation Priority**
 
@@ -397,6 +403,8 @@ Want to help add these features? Here's how:
 - ✅ **Easy recipe addition** - Just add Markdown files
 - ✅ **Interactive hero features** - Family can submit recipes and tips!
 - ✅ **GitHub API integration** - Submissions create GitHub issues automatically
+- ✅ **Calendar integration** - Google and Apple Calendar support with timeline preview
+- ✅ **PR preview workflows** - Test changes before deploying to production
 - 🔄 **Next up**: Recipe images and ingredient scaling
 
 ---
@@ -422,6 +430,87 @@ See `GITHUB_SETUP.md` for detailed setup instructions to enable the GitHub API i
 4. **Approve and implement** the new recipe or tip
 5. **Family sees their contribution** live on the site!
 
+---
+
+## 🗓️ Calendar Integration
+
+Every recipe now includes a **"Plan Your Cooking Timeline"** feature that helps you schedule your cooking!
+
+### Features
+
+- **📅 Interactive Timeline Preview** - See your prep, cook, and serving schedule
+- **🕒 Date/Time Picker** - Choose when you want to start cooking
+- **📱 Google Calendar** - One-click add to Google Calendar
+- **🍎 Apple Calendar** - Download ICS file for Apple Calendar, Outlook, etc.
+- **⚡ Real-time Updates** - Timeline adjusts as you change the date/time
+- **📲 Mobile Friendly** - Works perfectly on phones and tablets
+
+### How to Use
+
+1. **Visit any recipe page** (e.g., Turkey Dinner, Brussels Sprouts)
+2. **Scroll to "Plan Your Cooking Timeline"**
+3. **Choose your cooking date and start time**
+4. **Review the timeline preview** with prep/cook/serve phases
+5. **Click a calendar button** to add to your preferred calendar
+
+### Timeline Phases
+
+Each recipe automatically creates timeline events based on the recipe metadata:
+- **Prep Phase** - Gathering ingredients and preparation (based on `prepTime`)
+- **Cooking Phase** - Active cooking time (based on `cookTime`)
+- **Serving Phase** - Time to serve and enjoy (30-minute window)
+
+### Example
+
+For the **Turkey Dinner** recipe:
+- **6:00 PM** - Start prep (45 min)
+- **6:45 PM** - Begin cooking (4 hours)
+- **10:45 PM** - Serve and enjoy!
+
+The calendar integration makes it easy to coordinate cooking times, especially for holiday meals with multiple dishes!
+
+---
+
+## 🔄 Development Workflow
+
+### Making Changes with Pull Requests
+
+We've set up a comprehensive PR workflow for safe testing before deployment:
+
+1. **Create a feature branch:**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+
+2. **Make your changes and commit:**
+   ```bash
+   git add .
+   git commit -m "Description of changes"
+   git push origin feature/your-feature-name
+   ```
+
+3. **Create a Pull Request on GitHub:**
+   - Use the PR template that appears automatically
+   - GitHub Actions will build and deploy a preview
+   - A bot will comment with the preview URL
+   - Test your changes on the preview site
+
+4. **Review and merge:**
+   - Get approval from a maintainer
+   - All status checks must pass
+   - Merge to main when ready
+   - Changes deploy automatically to production
+
+### PR Preview Features
+
+- ✅ **Automatic preview deployments** for every PR
+- ✅ **Status checks** ensure builds pass
+- ✅ **Preview URLs** posted as PR comments
+- ✅ **Testing checklist** for calendar integration and other features
+- ✅ **Mobile and cross-browser testing** guidelines
+
+See `.github/BRANCH_PROTECTION.md` for complete setup instructions.
+
 ## 📞 Need Help?
 
 - Check the [Astro documentation](https://docs.astro.build/)
@@ -429,27 +518,20 @@ See `GITHUB_SETUP.md` for detailed setup instructions to enable the GitHub API i
 - Ask family members for recipe ideas!
 - Review the roadmap above for inspiration
 - See `GITHUB_SETUP.md` for API integration help
+- See `DEPLOYMENT.md` for deployment instructions
+- See `.github/BRANCH_PROTECTION.md` for PR workflow setup
+
+## 📚 Additional Documentation
+
+- **`DEPLOYMENT.md`** - Complete deployment guide for GitHub Pages, Netlify, and Vercel
+- **`GITHUB_SETUP.md`** - GitHub API integration setup for forms
+- **`RECIPE_TEMPLATE.md`** - Quick reference template for new recipes
+- **`.github/BRANCH_PROTECTION.md`** - Branch protection and PR workflow setup
+- **`.github/pull_request_template.md`** - PR template with testing checklist
 
 ---
 
 **Happy Cooking! 🍳✨**
 
 *Made with ❤️ for family cooking*
-
-## 🧪 PR Workflow Test
-
-This is a test PR to demonstrate the new Pull Request preview workflow with calendar integration testing.
-
-### What to test:
-- [ ] PR preview deployment works
-- [ ] Calendar integration appears on recipe pages
-- [ ] Timeline preview shows correctly
-- [ ] Google Calendar integration works
-- [ ] Apple Calendar (ICS) download works
-- [ ] Mobile responsive design
-- [ ] All existing functionality still works
-
-### Preview URL:
-The preview URL will be automatically added by GitHub Actions once the workflow runs.
-
 
