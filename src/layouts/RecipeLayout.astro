@@ -125,11 +125,16 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
     padding: 2rem 0;
     min-height: 80vh;
     margin-top: 80px;
+    position: relative;
   }
 
   .recipe-header {
     text-align: center;
     margin-bottom: 2rem;
+    position: relative;
+    z-index: 10;
+    background: #f0f8f0;
+    padding: 1rem 0;
   }
 
   .recipe-header h1 {
@@ -177,8 +182,7 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
     text-align: center;
     margin: 2rem auto;
     max-width: 600px;
-    position: relative;
-    z-index: 1;
+    padding: 0 1rem;
     clear: both;
   }
 
@@ -190,7 +194,6 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     display: block;
     margin: 0 auto;
-    position: relative;
   }
 
   .recipe-content {
@@ -202,8 +205,6 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
     border-radius: 16px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(143, 188, 143, 0.2);
-    position: relative;
-    z-index: 2;
     clear: both;
   }
 
