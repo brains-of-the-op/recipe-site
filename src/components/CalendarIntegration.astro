@@ -125,11 +125,11 @@ const timelineEvents = generateTimelineEvents();
   </div>
 </div>
 
-<script is:inline>
+<script is:inline define:vars={{ timelineEvents, slug, title }}>
   // Store timeline events for JavaScript access
-  window.timelineEvents = <JSON.stringify(timelineEvents)>;
-  window.recipeSlug = '<slug>';
-  window.recipeTitle = '<title>';
+  window.timelineEvents = timelineEvents;
+  window.recipeSlug = slug;
+  window.recipeTitle = title;
 
   function getSelectedDateTime() {
     const dateInput = document.getElementById('cooking-date');
@@ -182,7 +182,7 @@ const timelineEvents = generateTimelineEvents();
     timeInput.value = '18:00';
   });
 
-  async function addToGoogleCalendar() {
+  window.addToGoogleCalendar = async function() {
     const startTime = getSelectedDateTime();
     const events = window.timelineEvents;
     
@@ -216,7 +216,7 @@ const timelineEvents = generateTimelineEvents();
     }
   }
 
-  function downloadICSFile() {
+  window.downloadICSFile = function() {
     const startTime = getSelectedDateTime();
     const events = window.timelineEvents;
     
