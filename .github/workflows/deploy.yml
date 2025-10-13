@@ -4,6 +4,9 @@ on:
   # Trigger the workflow every time you push to the `main` branch
   push:
     branches: [ main ]
+  # Trigger on pull requests for preview deployments
+  pull_request:
+    branches: [ main ]
   # Allows you to run this workflow manually from the Actions tab on GitHub.
   workflow_dispatch:
 
@@ -30,10 +33,25 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    # Only deploy to production on main branch pushes
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
+        uses: actions/deploy-pages@v4
+
+  # Preview deployment for pull requests
+  preview:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    environment:
+      name: preview
+      url: ${{ steps.preview-deployment.outputs.page_url }}
+    steps:
+      - name: Deploy Preview
+        id: preview-deployment
         uses: actions/deploy-pages@v4
