@@ -72,7 +72,7 @@ const recipes = await getCollection("recipes");
           <a href={`${import.meta.env.BASE_URL}/recipes/${recipe.slug}/`} class="recipe-card">
             {recipe.data.image && (
               <div class="recipe-image">
-                <img src={recipe.data.image} alt={recipe.data.title} />
+                <img src={recipe.data.image.startsWith('http') ? recipe.data.image : `${import.meta.env.BASE_URL}${recipe.data.image}`} alt={recipe.data.title} />
               </div>
             )}
             <div class="recipe-card-content">
@@ -163,6 +163,14 @@ const recipes = await getCollection("recipes");
         </div>
         
         <div class="form-group">
+          <label for="imageUrl">Recipe Image URL (optional)</label>
+          <input type="url" id="imageUrl" name="imageUrl" placeholder="e.g., https://example.com/image.jpg or /images/recipes/my-dish.jpg">
+          <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 0.25rem;">
+            💡 You can use a URL from the web, or upload to /public/images/recipes/ and use /images/recipes/filename.jpg
+          </small>
+        </div>
+        
+        <div class="form-group">
           <label for="ingredients">Ingredients *</label>
           <textarea id="ingredients" name="ingredients" required rows="4" placeholder="List each ingredient on a new line:&#10;2 cups flour&#10;1 cup sugar&#10;3 eggs"></textarea>
         </div>
@@ -209,6 +217,14 @@ const recipes = await getCollection("recipes");
             <option value="time-saving">Time-Saving</option>
             <option value="holiday">Holiday Cooking</option>
           </select>
+        </div>
+        
+        <div class="form-group">
+          <label for="tipImageUrl">Tip Image URL (optional)</label>
+          <input type="url" id="tipImageUrl" name="imageUrl" placeholder="e.g., https://example.com/image.jpg or /images/tips/tip-image.jpg">
+          <small style="color: #666; font-size: 0.85rem; display: block; margin-top: 0.25rem;">
+            💡 Add a helpful visual to illustrate your tip!
+          </small>
         </div>
         
         <div class="form-group">

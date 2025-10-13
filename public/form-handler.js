@@ -212,6 +212,9 @@ class FormHandler {
 - **Servings:** ${data.servings || 'Not specified'}
 - **Difficulty:** ${data.difficulty || 'Not specified'}
 - **Tags:** ${data.tags || 'None'}
+${data.imageUrl ? `- **Image URL:** ${data.imageUrl}` : ''}
+
+${data.imageUrl ? `### Recipe Image\n![Recipe Image](${data.imageUrl})\n` : ''}
 
 ### Ingredients
 \`\`\`
@@ -238,6 +241,9 @@ ${data.proTips || 'None provided'}
 ### Tip Details
 - **Title:** ${data.title}
 - **Category:** ${data.category}
+${data.imageUrl ? `- **Image URL:** ${data.imageUrl}` : ''}
+
+${data.imageUrl ? `### Tip Image\n![Tip Image](${data.imageUrl})\n` : ''}
 
 ### Tip Content
 ${data.content}

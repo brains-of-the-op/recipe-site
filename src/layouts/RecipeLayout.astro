@@ -49,7 +49,6 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
       </div>
     </div>
   </nav>
-
   <!-- Recipe Detail Section -->
   <section class="recipe-detail">
     <div class="container">
@@ -70,16 +69,16 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
           </div>
         )}
       </div>
-      
       {image && (
         <div class="recipe-image">
-          <img src={image} alt={title} />
+          <img src={image.startsWith('http') ? image : `${import.meta.env.BASE_URL}${image}`} alt={title} />
         </div>
       )}
-      
       <div class="recipe-content">
         <slot />
       </div>
+
+
       
       <!-- Calendar Integration -->
       <CalendarIntegration 
@@ -129,7 +128,9 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
 
   .recipe-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 0;
+    background: #f0f8f0;
+    padding: 2rem 1rem;
   }
 
   .recipe-header h1 {
@@ -175,19 +176,25 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
 
   .recipe-image {
     text-align: center;
-    margin-bottom: 2rem;
+    margin: 5rem 0;
+    padding: 0;
+    background: none;
   }
 
   .recipe-image img {
-    max-width: 100%;
+    max-width: 400px;
+    max-height: 300px;
+    width: auto;
     height: auto;
+    object-fit: contain;
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
   .recipe-content {
     max-width: 800px;
-    margin: 0 auto;
+    margin: 3rem auto;
+    margin-bottom: 0;
     line-height: 1.6;
     background: white;
     padding: 2rem;
@@ -225,6 +232,15 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
     .recipe-stats {
       flex-direction: column;
       align-items: center;
+    }
+
+    .recipe-image {
+      max-width: 100%;
+      margin: 1.5rem auto;
+    }
+
+    .recipe-image img {
+      max-width: 100%;
     }
   }
 </style>

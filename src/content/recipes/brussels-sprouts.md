@@ -1,5 +1,6 @@
 ---
 title: "Roasted Brussels Sprouts with Bacon"
+image: "/images/recipes/brussels-sprouts.svg"
 prepTime: "10 min"
 cookTime: "25 min"
 totalTime: "35 min"

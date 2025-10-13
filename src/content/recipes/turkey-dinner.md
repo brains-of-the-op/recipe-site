@@ -1,5 +1,6 @@
 ---
 title: "Butter-Herb Turkey Dinner"
+image: "/images/recipes/turkey-dinner.jpeg"
 prepTime: "60 min"
 cookTime: "5 hours"
 totalTime: "6.5 hours"

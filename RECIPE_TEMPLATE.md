@@ -5,6 +5,7 @@ Copy this template to create a new recipe:
 ```markdown
 ---
 title: "Your Recipe Name Here"
+image: "/images/recipes/your-recipe.jpg"
 prepTime: "15 min"
 cookTime: "30 min"
 totalTime: "45 min"
@@ -67,6 +68,7 @@ Brief description of the recipe and why it's special.
 - `title`: Recipe name
 
 ### Optional Fields
+- `image`: "/images/recipes/filename.jpg" or external URL
 - `prepTime`: "15 min"
 - `cookTime`: "30 min" 
 - `totalTime`: "45 min"
@@ -75,6 +77,11 @@ Brief description of the recipe and why it's special.
 - `difficulty`: "Easy", "Medium", or "Hard"
 - `temperature`: "350°F"
 - `date`: 2025-01-01
+
+### Adding Images
+1. **Local images**: Save to `public/images/recipes/` and use `/images/recipes/filename.jpg`
+2. **External images**: Use any web URL like `https://example.com/image.jpg`
+3. **See `IMAGE_GUIDE.md`** for detailed instructions on image optimization and best practices
 
 ### Common Tags
 - **Meal types**: dinner, lunch, breakfast, snack
