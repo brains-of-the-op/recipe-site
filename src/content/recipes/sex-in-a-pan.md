@@ -1,6 +1,5 @@
 ---
 title: "Half & Half Sex in a Pan"
-image: "/images/recipes/chocolate-raspberry-cake.jpg"
 prepTime: "30 min"
 cookTime: "0 min"
 totalTime: "30 min + 6 hours chill"

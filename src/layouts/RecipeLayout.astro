@@ -73,7 +73,7 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
       
       {image && (
         <div class="recipe-image">
-          <img src={image} alt={title} />
+          <img src={image.startsWith('http') ? image : `${import.meta.env.BASE_URL}${image}`} alt={title} />
         </div>
       )}
       
