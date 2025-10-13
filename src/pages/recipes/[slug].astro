@@ -16,7 +16,7 @@ const data = recipe.data;
 const { Content } = await render(recipe);
 ---
 
-<RecipeLayout {...data}>
+<RecipeLayout {...data} slug={recipe.slug}>
   <div class="markdown-content">
     <Content />
   </div>

@@ -1,4 +1,6 @@
 ---
+import CalendarIntegration from '../components/CalendarIntegration.astro';
+
 export interface Props {
   title: string;
   image?: string;
@@ -9,9 +11,10 @@ export interface Props {
   tags?: string[];
   difficulty?: string;
   temperature?: string;
+  slug?: string;
 }
 
-const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty, temperature } = Astro.props;
+const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty, temperature, slug } = Astro.props;
 ---
 
 <!DOCTYPE html>
@@ -77,6 +80,16 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
       <div class="recipe-content">
         <slot />
       </div>
+      
+      <!-- Calendar Integration -->
+      <CalendarIntegration 
+        title={title}
+        prepTime={prepTime}
+        cookTime={cookTime}
+        totalTime={totalTime}
+        servings={servings}
+        slug={slug || ''}
+      />
     </div>
   </section>
 

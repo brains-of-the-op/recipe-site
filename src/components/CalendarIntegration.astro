@@ -1,0 +1,423 @@
+---
+export interface Props {
+  title: string;
+  prepTime?: string;
+  cookTime?: string;
+  totalTime?: string;
+  servings?: string;
+  slug: string;
+}
+
+const { title, prepTime, cookTime, totalTime, servings, slug } = Astro.props;
+
+// Parse time strings to minutes
+function parseTimeToMinutes(timeStr: string): number {
+  if (!timeStr) return 0;
+  
+  const match = timeStr.match(/(\d+)\s*(min|hour|hr|h)/i);
+  if (!match) return 0;
+  
+  const value = parseInt(match[1]);
+  const unit = match[2].toLowerCase();
+  
+  if (unit === 'min') return value;
+  if (unit === 'hour' || unit === 'hr' || unit === 'h') return value * 60;
+  
+  return 0;
+}
+
+const prepMinutes = prepTime ? parseTimeToMinutes(prepTime) : 0;
+const cookMinutes = cookTime ? parseTimeToMinutes(cookTime) : 0;
+const totalMinutes = totalTime ? parseTimeToMinutes(totalTime) : 0;
+
+// Generate timeline events
+function generateTimelineEvents() {
+  const events = [];
+  const now = new Date();
+  
+  // Start time (user can adjust this)
+  const startTime = new Date(now.getTime() + 2 * 60 * 60 * 1000); // 2 hours from now
+  
+  // Prep phase
+  if (prepMinutes > 0) {
+    events.push({
+      title: `Prep: ${title}`,
+      start: startTime,
+      end: new Date(startTime.getTime() + prepMinutes * 60 * 1000),
+      description: `Preparation time for ${title}. Gather ingredients and prep as needed.`,
+      type: 'prep'
+    });
+  }
+  
+  // Cooking phase
+  if (cookMinutes > 0) {
+    const cookStart = prepMinutes > 0 ? 
+      new Date(startTime.getTime() + prepMinutes * 60 * 1000) : 
+      startTime;
+    
+    events.push({
+      title: `Cook: ${title}`,
+      start: cookStart,
+      end: new Date(cookStart.getTime() + cookMinutes * 60 * 1000),
+      description: `Active cooking time for ${title}. Follow recipe instructions.`,
+      type: 'cook'
+    });
+  }
+  
+  // Serving time
+  const serveTime = new Date(startTime.getTime() + (prepMinutes + cookMinutes) * 60 * 1000);
+  events.push({
+    title: `Serve: ${title}`,
+    start: serveTime,
+    end: new Date(serveTime.getTime() + 30 * 60 * 1000), // 30 min serving window
+    description: `Time to serve ${title}! ${servings ? `Serves ${servings}.` : ''}`,
+    type: 'serve'
+  });
+  
+  return events;
+}
+
+const timelineEvents = generateTimelineEvents();
+---
+
+<div class="calendar-integration">
+  <div class="calendar-header">
+    <h3><i class="fas fa-calendar-alt"></i> Plan Your Cooking Timeline</h3>
+    <p>Add this recipe to your calendar to plan your cooking schedule</p>
+  </div>
+  
+  <div class="timeline-preview">
+    <h4>Your Cooking Timeline:</h4>
+    <div class="timeline-events">
+      {timelineEvents.map((event, index) => (
+        <div class={`timeline-event ${event.type}`}>
+          <div class="event-time">
+            {event.start.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - 
+            {event.end.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
+          <div class="event-title">{event.title}</div>
+          <div class="event-description">{event.description}</div>
+        </div>
+      ))}
+    </div>
+  </div>
+  
+  <div class="calendar-actions">
+    <div class="date-time-selector">
+      <label for="cooking-date">Choose your cooking date:</label>
+      <input type="date" id="cooking-date" name="cooking-date" />
+      
+      <label for="cooking-time">Start time:</label>
+      <input type="time" id="cooking-time" name="cooking-time" />
+    </div>
+    
+    <div class="calendar-buttons">
+      <button class="calendar-btn google-calendar" onclick="addToGoogleCalendar()">
+        <i class="fab fa-google"></i>
+        Add to Google Calendar
+      </button>
+      
+      <button class="calendar-btn apple-calendar" onclick="downloadICSFile()">
+        <i class="fab fa-apple"></i>
+        Add to Apple Calendar
+      </button>
+    </div>
+  </div>
+</div>
+
+<script is:inline>
+  // Store timeline events for JavaScript access
+  window.timelineEvents = <JSON.stringify(timelineEvents)>;
+  window.recipeSlug = '<slug>';
+  window.recipeTitle = '<title>';
+
+  function getSelectedDateTime() {
+    const dateInput = document.getElementById('cooking-date');
+    const timeInput = document.getElementById('cooking-time');
+    
+    // Default to tomorrow at 6 PM if not set
+    const defaultDate = new Date();
+    defaultDate.setDate(defaultDate.getDate() + 1);
+    defaultDate.setHours(18, 0, 0, 0);
+    
+    const selectedDate = dateInput.value ? new Date(dateInput.value) : defaultDate;
+    const selectedTime = timeInput.value ? timeInput.value.split(':') : ['18', '00'];
+    
+    selectedDate.setHours(parseInt(selectedTime[0]), parseInt(selectedTime[1]), 0, 0);
+    
+    return selectedDate;
+  }
+
+  function updateTimelinePreview() {
+    const startTime = getSelectedDateTime();
+    const events = window.timelineEvents;
+    
+    // Update timeline display with new times
+    const eventElements = document.querySelectorAll('.timeline-event');
+    eventElements.forEach((element, index) => {
+      if (index < events.length) {
+        const event = events[index];
+        const eventStart = new Date(startTime.getTime() + (index > 0 ? 
+          events.slice(0, index).reduce((sum, e) => sum + (e.end.getTime() - e.start.getTime()), 0) : 0));
+        const eventEnd = new Date(eventStart.getTime() + (event.end.getTime() - event.start.getTime()));
+        
+        const timeElement = element.querySelector('.event-time');
+        timeElement.textContent = `${eventStart.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} - ${eventEnd.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      }
+    });
+  }
+
+  // Update timeline when date/time changes
+  document.addEventListener('DOMContentLoaded', function() {
+    const dateInput = document.getElementById('cooking-date');
+    const timeInput = document.getElementById('cooking-time');
+    
+    if (dateInput) dateInput.addEventListener('change', updateTimelinePreview);
+    if (timeInput) timeInput.addEventListener('change', updateTimelinePreview);
+    
+    // Set default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    dateInput.value = tomorrow.toISOString().split('T')[0];
+    timeInput.value = '18:00';
+  });
+
+  async function addToGoogleCalendar() {
+    const startTime = getSelectedDateTime();
+    const events = window.timelineEvents;
+    
+    try {
+      // Create events for each phase
+      for (const event of events) {
+        const eventStart = new Date(startTime.getTime() + (events.indexOf(event) > 0 ? 
+          events.slice(0, events.indexOf(event)).reduce((sum, e) => sum + (e.end.getTime() - e.start.getTime()), 0) : 0));
+        const eventEnd = new Date(eventStart.getTime() + (event.end.getTime() - event.start.getTime()));
+        
+        const googleEvent = {
+          summary: event.title,
+          description: event.description,
+          start: {
+            dateTime: eventStart.toISOString(),
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          },
+          end: {
+            dateTime: eventEnd.toISOString(),
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone
+          }
+        };
+        
+        const googleUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(googleEvent.summary)}&dates=${eventStart.toISOString().replace(/[-:]/g, '').split('.')[0]}Z/${eventEnd.toISOString().replace(/[-:]/g, '').split('.')[0]}Z&details=${encodeURIComponent(googleEvent.description)}`;
+        
+        window.open(googleUrl, '_blank');
+      }
+    } catch (error) {
+      console.error('Error adding to Google Calendar:', error);
+      alert('Error adding to Google Calendar. Please try again.');
+    }
+  }
+
+  function downloadICSFile() {
+    const startTime = getSelectedDateTime();
+    const events = window.timelineEvents;
+    
+    let icsContent = 'BEGIN:VCALENDAR\r\n';
+    icsContent += 'VERSION:2.0\r\n';
+    icsContent += 'PRODID:-//Recipe Site//Cooking Timeline//EN\r\n';
+    icsContent += 'CALSCALE:GREGORIAN\r\n';
+    
+    events.forEach((event, index) => {
+      const eventStart = new Date(startTime.getTime() + (index > 0 ? 
+        events.slice(0, index).reduce((sum, e) => sum + (e.end.getTime() - e.start.getTime()), 0) : 0));
+      const eventEnd = new Date(eventStart.getTime() + (event.end.getTime() - event.start.getTime()));
+      
+      icsContent += 'BEGIN:VEVENT\r\n';
+      icsContent += `UID:${Date.now()}-${index}@recipe-site.com\r\n`;
+      icsContent += `DTSTART:${eventStart.toISOString().replace(/[-:]/g, '').split('.')[0]}Z\r\n`;
+      icsContent += `DTEND:${eventEnd.toISOString().replace(/[-:]/g, '').split('.')[0]}Z\r\n`;
+      icsContent += `SUMMARY:${event.title}\r\n`;
+      icsContent += `DESCRIPTION:${event.description.replace(/\r?\n/g, '\\n')}\r\n`;
+      icsContent += 'END:VEVENT\r\n';
+    });
+    
+    icsContent += 'END:VCALENDAR\r\n';
+    
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `${window.recipeTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_cooking_timeline.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+</script>
+
+<style>
+  .calendar-integration {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(143, 188, 143, 0.2);
+  }
+
+  .calendar-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .calendar-header h3 {
+    color: var(--primary-color, #8fbc8f);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .calendar-header p {
+    color: var(--text-light, #666);
+    margin: 0;
+  }
+
+  .timeline-preview {
+    margin-bottom: 2rem;
+  }
+
+  .timeline-preview h4 {
+    color: var(--accent-color, #cd853f);
+    margin-bottom: 1rem;
+  }
+
+  .timeline-events {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .timeline-event {
+    padding: 1rem;
+    border-radius: 8px;
+    border-left: 4px solid;
+  }
+
+  .timeline-event.prep {
+    background: rgba(143, 188, 143, 0.1);
+    border-left-color: var(--primary-color, #8fbc8f);
+  }
+
+  .timeline-event.cook {
+    background: rgba(205, 133, 63, 0.1);
+    border-left-color: var(--accent-color, #cd853f);
+  }
+
+  .timeline-event.serve {
+    background: rgba(255, 182, 193, 0.1);
+    border-left-color: #ffb6c1;
+  }
+
+  .event-time {
+    font-weight: 600;
+    color: var(--primary-color, #8fbc8f);
+    font-size: 0.9rem;
+  }
+
+  .event-title {
+    font-weight: 600;
+    margin: 0.5rem 0;
+    color: var(--text-dark, #333);
+  }
+
+  .event-description {
+    color: var(--text-light, #666);
+    font-size: 0.9rem;
+  }
+
+  .calendar-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .date-time-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    align-items: end;
+  }
+
+  .date-time-selector label {
+    display: block;
+    font-weight: 500;
+    color: var(--text-dark, #333);
+    margin-bottom: 0.5rem;
+  }
+
+  .date-time-selector input {
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease;
+  }
+
+  .date-time-selector input:focus {
+    outline: none;
+    border-color: var(--primary-color, #8fbc8f);
+  }
+
+  .calendar-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .calendar-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+  }
+
+  .google-calendar {
+    background: #4285f4;
+    color: white;
+  }
+
+  .google-calendar:hover {
+    background: #3367d6;
+    transform: translateY(-2px);
+  }
+
+  .apple-calendar {
+    background: #000;
+    color: white;
+  }
+
+  .apple-calendar:hover {
+    background: #333;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 768px) {
+    .date-time-selector {
+      grid-template-columns: 1fr;
+    }
+    
+    .calendar-buttons {
+      flex-direction: column;
+    }
+    
+    .calendar-btn {
+      justify-content: center;
+    }
+  }
+</style>
