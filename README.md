@@ -41,6 +41,7 @@ Copy and paste this complete template into your new recipe file:
 ```markdown
 ---
 title: "Your Recipe Name Here"
+image: "/images/recipes/your-recipe.jpg"
 prepTime: "15 min"
 cookTime: "30 min"
 totalTime: "45 min"
@@ -134,18 +135,43 @@ Replace the template content with your actual recipe:
 - Write your cooking instructions
 - Add your own pro tips and notes
 
-### 4. Save and View
+### 4. Add an Image (Optional)
+
+Want to make your recipe even more appealing? Add an image!
+
+**Option 1: Use an external URL**
+```markdown
+---
+title: "Your Recipe Name"
+image: "https://example.com/image.jpg"
+---
+```
+
+**Option 2: Upload a local image**
+1. Save your image to `public/images/recipes/`
+2. Reference it in your frontmatter:
+```markdown
+---
+title: "Your Recipe Name"
+image: "/images/recipes/my-dish.jpg"
+---
+```
+
+📸 **See `IMAGE_GUIDE.md` for detailed instructions on adding and optimizing images!**
+
+### 5. Save and View
 
 That's it! Save your file and the recipe will automatically appear on your website:
-- **Home page**: Shows in the featured recipes section
-- **All Recipes page**: Appears in the recipe grid
-- **Individual page**: Available at `/recipes/your-recipe-name/`
+- **Home page**: Shows in the featured recipes section with your image
+- **All Recipes page**: Appears in the recipe grid with image thumbnail
+- **Individual page**: Available at `/recipes/your-recipe-name/` with full image display
 
 ## 🏷️ Recipe Frontmatter Options
 
 | Field | Required | Description | Example |
 |-------|----------|-------------|---------|
 | `title` | ✅ | Recipe name | `"Chocolate Chip Cookies"` |
+| `image` | ❌ | Recipe image URL | `"/images/recipes/cookies.jpg"` |
 | `prepTime` | ❌ | Preparation time | `"15 min"` |
 | `cookTime` | ❌ | Cooking time | `"25 min"` |
 | `totalTime` | ❌ | Total time | `"40 min"` |
@@ -253,6 +279,8 @@ npm run build
 - ✅ **Easy Content Management**: Just edit Markdown files
 - ✅ **Automatic Navigation**: New recipes appear automatically
 - ✅ **Tag System**: Organize recipes by categories
+- ✅ **Recipe Images**: Support for local and external images on recipes and tips
+- ✅ **Image Uploads**: Add images through submission forms
 - ✅ **Calendar Integration**: Add recipes to Google Calendar or Apple Calendar
 - ✅ **Interactive Timeline**: Visual cooking schedule with prep/cook/serve phases
 - ✅ **GitHub Forms**: Family members can submit recipes and tips via forms
@@ -296,17 +324,21 @@ To add a new recipe:
 
 Here are exciting features we're planning to add to make your recipe site even more amazing!
 
-### 🖼️ **Images & Visual Features**
+### 🖼️ **Images & Visual Features** ✅ **COMPLETED!**
 
 #### **Recipe Images**
-- [ ] Add image fields to recipe frontmatter
-- [ ] Automatic image optimization with Astro
-- [ ] Gallery views for step-by-step photos
-- [ ] Print-friendly recipe cards with images
-- [ ] Before/after cooking photos
-- [ ] Nutritional information displays
+- ✅ Add image fields to recipe frontmatter
+- ✅ Support for local and external image URLs
+- ✅ Automatic image display on recipe pages
+- ✅ Image upload support through submission forms
+- ✅ Comprehensive image documentation and guide
+- [ ] Automatic image optimization with Astro (Future)
+- [ ] Gallery views for step-by-step photos (Future)
+- [ ] Print-friendly recipe cards with images (Future)
+- [ ] Before/after cooking photos (Future)
+- [ ] Nutritional information displays (Future)
 
-#### **Visual Enhancements**
+#### **Visual Enhancements (Future)**
 - [ ] Recipe video embeds (YouTube/Vimeo)
 - [ ] Interactive ingredient checkboxes
 - [ ] Recipe difficulty visual indicators
@@ -405,7 +437,8 @@ Want to help add these features? Here's how:
 - ✅ **GitHub API integration** - Submissions create GitHub issues automatically
 - ✅ **Calendar integration** - Google and Apple Calendar support with timeline preview
 - ✅ **PR preview workflows** - Test changes before deploying to production
-- 🔄 **Next up**: Recipe images and ingredient scaling
+- ✅ **Recipe images** - Full support for local and external images!
+- 🔄 **Next up**: Ingredient scaling and interactive timers
 
 ---
 
@@ -526,6 +559,7 @@ See `.github/BRANCH_PROTECTION.md` for complete setup instructions.
 - **`DEPLOYMENT.md`** - Complete deployment guide for GitHub Pages, Netlify, and Vercel
 - **`GITHUB_SETUP.md`** - GitHub API integration setup for forms
 - **`RECIPE_TEMPLATE.md`** - Quick reference template for new recipes
+- **`IMAGE_GUIDE.md`** - Comprehensive guide for adding images to recipes and tips
 - **`.github/BRANCH_PROTECTION.md`** - Branch protection and PR workflow setup
 - **`.github/pull_request_template.md`** - PR template with testing checklist
 

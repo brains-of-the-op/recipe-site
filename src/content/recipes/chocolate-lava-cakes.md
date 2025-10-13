@@ -1,5 +1,6 @@
 ---
 title: "Chocolate Lava Cakes"
+image: "/images/recipes/lava-cakes.jpg"
 prepTime: "10 min"
 cookTime: "14 min"
 totalTime: "25 min"
