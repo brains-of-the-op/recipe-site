@@ -435,3 +435,21 @@ See `GITHUB_SETUP.md` for detailed setup instructions to enable the GitHub API i
 **Happy Cooking! 🍳✨**
 
 *Made with ❤️ for family cooking*
+
+## 🧪 PR Workflow Test
+
+This is a test PR to demonstrate the new Pull Request preview workflow with calendar integration testing.
+
+### What to test:
+- [ ] PR preview deployment works
+- [ ] Calendar integration appears on recipe pages
+- [ ] Timeline preview shows correctly
+- [ ] Google Calendar integration works
+- [ ] Apple Calendar (ICS) download works
+- [ ] Mobile responsive design
+- [ ] All existing functionality still works
+
+### Preview URL:
+The preview URL will be automatically added by GitHub Actions once the workflow runs.
+
+
