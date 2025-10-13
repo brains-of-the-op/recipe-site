@@ -48,14 +48,26 @@ const durations = {
   </div>
   
   <div class="calendar-actions">
+    <div class="planning-mode">
+      <label>Planning Mode:</label>
+      <div class="mode-selector">
+        <button type="button" class="mode-btn active" id="mode-start" onclick="window.switchMode('start')">
+          <i class="fas fa-play"></i> Start Cooking
+        </button>
+        <button type="button" class="mode-btn" id="mode-eating" onclick="window.switchMode('eating')">
+          <i class="fas fa-utensils"></i> Eating Time
+        </button>
+      </div>
+    </div>
+    
     <div class="date-time-selector">
       <div>
-        <label for="cooking-date">Choose your cooking date:</label>
+        <label for="cooking-date">Choose your date:</label>
         <input type="date" id="cooking-date" name="cooking-date" />
       </div>
       
       <div>
-        <label for="cooking-time">Start time:</label>
+        <label for="cooking-time" id="time-label">Start cooking at:</label>
         <input type="time" id="cooking-time" name="cooking-time" />
       </div>
     </div>
@@ -89,8 +101,32 @@ const durations = {
     durations: durations,
     prepMinutes: prepMinutes,
     cookMinutes: cookMinutes,
-    serveMinutes: serveMinutes
+    serveMinutes: serveMinutes,
+    currentMode: 'start' // 'start' or 'eating'
   };
+
+  window.switchMode = function(mode) {
+    const data = window.recipeData;
+    data.currentMode = mode;
+    
+    // Update button states
+    const startBtn = document.getElementById('mode-start');
+    const eatingBtn = document.getElementById('mode-eating');
+    const timeLabel = document.getElementById('time-label');
+    
+    if (mode === 'start') {
+      startBtn.classList.add('active');
+      eatingBtn.classList.remove('active');
+      timeLabel.textContent = 'Start cooking at:';
+    } else {
+      startBtn.classList.remove('active');
+      eatingBtn.classList.add('active');
+      timeLabel.textContent = 'Ready to eat at:';
+    }
+    
+    // Update timeline
+    updateTimelinePreview();
+  }
 
   function getSelectedDateTime() {
     const dateInput = document.getElementById('cooking-date');
@@ -107,6 +143,12 @@ const durations = {
     const dateTime = new Date(selectedDate + 'T' + selectedTime);
     return dateTime;
   }
+  
+  function calculateStartTime(eatingTime) {
+    const data = window.recipeData;
+    const totalDuration = data.durations.prep + data.durations.cook;
+    return new Date(eatingTime.getTime() - totalDuration);
+  }
 
   function formatTime(date) {
     return date.toLocaleTimeString('en-US', { 
@@ -117,12 +159,22 @@ const durations = {
   }
 
   function updateTimelinePreview() {
-    const startTime = getSelectedDateTime();
-    if (!startTime) return;
+    const selectedTime = getSelectedDateTime();
+    if (!selectedTime) return;
     
     const data = window.recipeData;
     const eventsContainer = document.getElementById('timeline-events');
     if (!eventsContainer) return;
+    
+    // Calculate start time based on mode
+    let startTime;
+    if (data.currentMode === 'eating') {
+      // User selected eating time, calculate when to start cooking
+      startTime = calculateStartTime(selectedTime);
+    } else {
+      // User selected start cooking time
+      startTime = selectedTime;
+    }
     
     let currentTime = new Date(startTime);
     const events = [];
@@ -306,13 +358,13 @@ const durations = {
     
     if (!dateInput || !timeInput) return;
     
-    // Set default to tomorrow at 6:00 PM
+    // Set default to tomorrow at 4:30 PM
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(18, 0, 0, 0);
+    tomorrow.setHours(16, 30, 0, 0);
     
     dateInput.value = tomorrow.toISOString().split('T')[0];
-    timeInput.value = '18:00';
+    timeInput.value = '16:30';
     
     // Add event listeners
     dateInput.addEventListener('change', updateTimelinePreview);
@@ -355,6 +407,57 @@ const durations = {
 
   .calendar-actions {
     margin-bottom: 2rem;
+  }
+
+  .planning-mode {
+    margin-bottom: 1.5rem;
+  }
+
+  .planning-mode > label {
+    display: block;
+    font-weight: 600;
+    color: var(--text-dark, #333);
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+  }
+
+  .mode-selector {
+    display: flex;
+    gap: 0.5rem;
+    background: #f5f5f5;
+    padding: 0.25rem;
+    border-radius: 8px;
+    width: fit-content;
+  }
+
+  .mode-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--text-light, #666);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .mode-btn:hover {
+    background: rgba(143, 188, 143, 0.1);
+    color: var(--primary-color, #8fbc8f);
+  }
+
+  .mode-btn.active {
+    background: white;
+    color: var(--primary-color, #8fbc8f);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .mode-btn i {
+    font-size: 1rem;
   }
 
   .date-time-selector {
