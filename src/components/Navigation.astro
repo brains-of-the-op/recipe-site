@@ -1,0 +1,29 @@
+---
+export interface Props {
+  activePage?: 'home' | 'recipes' | 'tips';
+}
+
+const { activePage } = Astro.props;
+---
+
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-logo">
+      <a href={`${import.meta.env.BASE_URL}/`}>
+        <i class="fas fa-utensils"></i>
+        <span>This Is How We Do It</span>
+      </a>
+    </div>
+    <div class="nav-menu" id="nav-menu">
+      <a href={`${import.meta.env.BASE_URL}/`} class:list={["nav-link", { active: activePage === 'home' }]}>Home</a>
+      <a href={`${import.meta.env.BASE_URL}/recipes`} class:list={["nav-link", { active: activePage === 'recipes' }]}>All Recipes</a>
+      <a href={`${import.meta.env.BASE_URL}/tips`} class:list={["nav-link", { active: activePage === 'tips' }]}>Cooking Tips</a>
+    </div>
+    <div class="nav-toggle" id="nav-toggle">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </div>
+  </div>
+</nav>
+

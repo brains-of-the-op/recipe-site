@@ -1,3 +1,9 @@
+---
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import TipCard from '../components/TipCard.astro';
+---
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,27 +15,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <div class="nav-logo">
-        <a href={`${import.meta.env.BASE_URL}/`}>
-          <i class="fas fa-utensils"></i>
-          <span>This Is How We Do It</span>
-        </a>
-      </div>
-      <div class="nav-menu" id="nav-menu">
-        <a href={`${import.meta.env.BASE_URL}/`} class="nav-link">Home</a>
-        <a href={`${import.meta.env.BASE_URL}/recipes`} class="nav-link">All Recipes</a>
-        <a href={`${import.meta.env.BASE_URL}/tips`} class="nav-link active">Cooking Tips</a>
-      </div>
-      <div class="nav-toggle" id="nav-toggle">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-      </div>
-    </div>
-  </nav>
+  <Navigation activePage="tips" />
 
   <!-- Cooking Tips Section -->
   <section class="tips-page">
@@ -44,22 +30,22 @@
         <div class="tip-category">
           <h2><i class="fas fa-book-reader"></i> General Cooking Tips</h2>
           <div class="tips-grid">
-            <div class="tip-card">
-              <h3>Read the Recipe First</h3>
-              <p>Always read through the entire recipe before starting. This helps you understand the process, timing, and what equipment you'll need.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Mise en Place</h3>
-              <p>Prep all your ingredients before you start cooking. This French technique means "everything in its place" and makes cooking much smoother.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Taste as You Go</h3>
-              <p>Season and taste your food throughout the cooking process. It's much easier to adjust flavors gradually than to fix an over-seasoned dish.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Clean as You Cook</h3>
-              <p>Wash dishes and clean up while you cook. This keeps your workspace organized and makes cleanup much less overwhelming.</p>
-            </div>
+            <TipCard 
+              title="Read the Recipe First"
+              content="Always read through the entire recipe before starting. This helps you understand the process, timing, and what equipment you'll need."
+            />
+            <TipCard 
+              title="Mise en Place"
+              content="Prep all your ingredients before you start cooking. This French technique means &quot;everything in its place&quot; and makes cooking much smoother."
+            />
+            <TipCard 
+              title="Taste as You Go"
+              content="Season and taste your food throughout the cooking process. It's much easier to adjust flavors gradually than to fix an over-seasoned dish."
+            />
+            <TipCard 
+              title="Clean as You Cook"
+              content="Wash dishes and clean up while you cook. This keeps your workspace organized and makes cleanup much less overwhelming."
+            />
           </div>
         </div>
 
@@ -67,22 +53,22 @@
         <div class="tip-category">
           <h2><i class="fas fa-thermometer-half"></i> Temperature Guidelines</h2>
           <div class="tips-grid">
-            <div class="tip-card">
-              <h3>Poultry</h3>
-              <p><strong>165°F (74°C)</strong> - This is the safe internal temperature for all poultry, including chicken, turkey, and duck.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Beef</h3>
-              <p><strong>145°F (63°C)</strong> for medium-rare, 160°F (71°C) for medium, 170°F (77°C) for well-done.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Pork</h3>
-              <p><strong>145°F (63°C)</strong> - Modern pork is safe at this temperature, allowing for juicy, tender results.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Fish</h3>
-              <p><strong>145°F (63°C)</strong> - Fish should flake easily with a fork when properly cooked.</p>
-            </div>
+            <TipCard 
+              title="Poultry"
+              content="<strong>165°F (74°C)</strong> - This is the safe internal temperature for all poultry, including chicken, turkey, and duck."
+            />
+            <TipCard 
+              title="Beef"
+              content="<strong>145°F (63°C)</strong> for medium-rare, 160°F (71°C) for medium, 170°F (77°C) for well-done."
+            />
+            <TipCard 
+              title="Pork"
+              content="<strong>145°F (63°C)</strong> - Modern pork is safe at this temperature, allowing for juicy, tender results."
+            />
+            <TipCard 
+              title="Fish"
+              content="<strong>145°F (63°C)</strong> - Fish should flake easily with a fork when properly cooked."
+            />
           </div>
         </div>
 
@@ -90,22 +76,22 @@
         <div class="tip-category">
           <h2><i class="fas fa-exchange-alt"></i> Smart Substitutions</h2>
           <div class="tips-grid">
-            <div class="tip-card">
-              <h3>Dairy Alternatives</h3>
-              <p>Use lactose-free milk, almond milk, or coconut milk as 1:1 substitutes for regular milk in most recipes.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Fresh vs Dried Herbs</h3>
-              <p>Fresh herbs can replace dried herbs - use 3 times more fresh than dried. Dried herbs are more concentrated.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Sweetener Swaps</h3>
-              <p>Maple syrup can replace honey in equal amounts. Both add moisture and sweetness to recipes.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Stock Substitutions</h3>
-              <p>Vegetable stock can replace chicken stock in most recipes. Use low-sodium versions to control salt levels.</p>
-            </div>
+            <TipCard 
+              title="Dairy Alternatives"
+              content="Use lactose-free milk, almond milk, or coconut milk as 1:1 substitutes for regular milk in most recipes."
+            />
+            <TipCard 
+              title="Fresh vs Dried Herbs"
+              content="Fresh herbs can replace dried herbs - use 3 times more fresh than dried. Dried herbs are more concentrated."
+            />
+            <TipCard 
+              title="Sweetener Swaps"
+              content="Maple syrup can replace honey in equal amounts. Both add moisture and sweetness to recipes."
+            />
+            <TipCard 
+              title="Stock Substitutions"
+              content="Vegetable stock can replace chicken stock in most recipes. Use low-sodium versions to control salt levels."
+            />
           </div>
         </div>
 
@@ -113,22 +99,22 @@
         <div class="tip-category">
           <h2><i class="fas fa-tools"></i> Essential Kitchen Tools</h2>
           <div class="tips-grid">
-            <div class="tip-card">
-              <h3>Sharp Knives</h3>
-              <p>A sharp chef's knife is safer and more efficient than a dull one. Learn proper knife skills for faster, safer prep work.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Digital Thermometer</h3>
-              <p>Essential for cooking meat safely. Instant-read thermometers give you confidence in doneness levels.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Good Cutting Board</h3>
-              <p>Use separate cutting boards for raw meat and vegetables to prevent cross-contamination.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Kitchen Scale</h3>
-              <p>Weighing ingredients is more accurate than measuring by volume, especially for baking.</p>
-            </div>
+            <TipCard 
+              title="Sharp Knives"
+              content="A sharp chef's knife is safer and more efficient than a dull one. Learn proper knife skills for faster, safer prep work."
+            />
+            <TipCard 
+              title="Digital Thermometer"
+              content="Essential for cooking meat safely. Instant-read thermometers give you confidence in doneness levels."
+            />
+            <TipCard 
+              title="Good Cutting Board"
+              content="Use separate cutting boards for raw meat and vegetables to prevent cross-contamination."
+            />
+            <TipCard 
+              title="Kitchen Scale"
+              content="Weighing ingredients is more accurate than measuring by volume, especially for baking."
+            />
           </div>
         </div>
 
@@ -136,22 +122,22 @@
         <div class="tip-category">
           <h2><i class="fas fa-clock"></i> Time-Saving Strategies</h2>
           <div class="tips-grid">
-            <div class="tip-card">
-              <h3>Batch Prep</h3>
-              <p>Chop extra vegetables when you have time. Store them properly and use throughout the week.</p>
-            </div>
-            <div class="tip-card">
-              <h3>One-Pot Meals</h3>
-              <p>Choose recipes that cook everything in one pot or pan to minimize cleanup and cooking time.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Slow Cooker Magic</h3>
-              <p>Use your slow cooker for tough cuts of meat and dishes that benefit from long, slow cooking.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Freezer Meals</h3>
-              <p>Double recipes and freeze half for future meals. Soups, stews, and casseroles freeze particularly well.</p>
-            </div>
+            <TipCard 
+              title="Batch Prep"
+              content="Chop extra vegetables when you have time. Store them properly and use throughout the week."
+            />
+            <TipCard 
+              title="One-Pot Meals"
+              content="Choose recipes that cook everything in one pot or pan to minimize cleanup and cooking time."
+            />
+            <TipCard 
+              title="Slow Cooker Magic"
+              content="Use your slow cooker for tough cuts of meat and dishes that benefit from long, slow cooking."
+            />
+            <TipCard 
+              title="Freezer Meals"
+              content="Double recipes and freeze half for future meals. Soups, stews, and casseroles freeze particularly well."
+            />
           </div>
         </div>
 
@@ -159,50 +145,29 @@
         <div class="tip-category">
           <h2><i class="fas fa-calendar-alt"></i> Holiday Cooking Tips</h2>
           <div class="tips-grid">
-            <div class="tip-card">
-              <h3>Plan Your Timeline</h3>
-              <p>Work backwards from serving time. Know when each dish needs to go in the oven and plan accordingly.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Make Ahead</h3>
-              <p>Prepare side dishes the day before when possible. Many casseroles and desserts improve with overnight chilling.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Use Your Oven Wisely</h3>
-              <p>Group dishes by cooking temperature. Start with the longest-cooking items and work your way up.</p>
-            </div>
-            <div class="tip-card">
-              <h3>Rest Your Meat</h3>
-              <p>Let roasted meats rest for 15-30 minutes before carving. This allows juices to redistribute for better flavor.</p>
-            </div>
+            <TipCard 
+              title="Plan Your Timeline"
+              content="Work backwards from serving time. Know when each dish needs to go in the oven and plan accordingly."
+            />
+            <TipCard 
+              title="Make Ahead"
+              content="Prepare side dishes the day before when possible. Many casseroles and desserts improve with overnight chilling."
+            />
+            <TipCard 
+              title="Use Your Oven Wisely"
+              content="Group dishes by cooking temperature. Start with the longest-cooking items and work your way up."
+            />
+            <TipCard 
+              title="Rest Your Meat"
+              content="Let roasted meats rest for 15-30 minutes before carving. This allows juices to redistribute for better flavor."
+            />
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>This Is How We Do It</h3>
-          <p>Our family's digital cookbook and planning space</p>
-        </div>
-        <div class="footer-section">
-          <h4>Quick Links</h4>
-          <ul>
-            <li><a href={`${import.meta.env.BASE_URL}/`}>Home</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}/recipes`}>All Recipes</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}/tips`}>Cooking Tips</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; 2025 This Is How We Do It. Made with ❤️ for family cooking.</p>
-      </div>
-    </div>
-  </footer>
+  <Footer />
 
   <script src={`${import.meta.env.BASE_URL}/script.js`} is:inline></script>
 </body>
@@ -260,57 +225,6 @@
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
-  }
-
-  .tip-card {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(143, 188, 143, 0.2);
-    transition: all 0.3s ease;
-    position: relative;
-  }
-
-  .tip-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #8fbc8f, #d2b48c);
-    border-radius: 16px 16px 0 0;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .tip-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    border-color: rgba(143, 188, 143, 0.4);
-  }
-
-  .tip-card:hover::before {
-    opacity: 1;
-  }
-
-  .tip-card h3 {
-    font-size: 1.2rem;
-    color: #8fbc8f;
-    margin-bottom: 0.8rem;
-    font-weight: 600;
-  }
-
-  .tip-card p {
-    color: #5d4037;
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .tip-card strong {
-    color: #cd853f;
-    font-weight: 600;
   }
 
   @media (max-width: 768px) {

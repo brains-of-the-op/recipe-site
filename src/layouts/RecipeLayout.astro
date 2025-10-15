@@ -1,4 +1,6 @@
 ---
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
 import CalendarIntegration from '../components/CalendarIntegration.astro';
 
 export interface Props {
@@ -28,27 +30,8 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <div class="nav-logo">
-        <a href={`${import.meta.env.BASE_URL}/`}>
-          <i class="fas fa-utensils"></i>
-          <span>This Is How We Do It</span>
-        </a>
-      </div>
-      <div class="nav-menu" id="nav-menu">
-        <a href={`${import.meta.env.BASE_URL}/`} class="nav-link">Home</a>
-        <a href={`${import.meta.env.BASE_URL}/recipes`} class="nav-link">All Recipes</a>
-        <a href={`${import.meta.env.BASE_URL}/tips`} class="nav-link">Cooking Tips</a>
-      </div>
-      <div class="nav-toggle" id="nav-toggle">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-      </div>
-    </div>
-  </nav>
+  <Navigation activePage="recipes" />
+
   <!-- Recipe Detail Section -->
   <section class="recipe-detail">
     <div class="container">
@@ -74,12 +57,29 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
           <img src={image.startsWith('http') ? image : `${import.meta.env.BASE_URL}${image}`} alt={title} />
         </div>
       )}
+      
+      <!-- Recipe Actions -->
+      <div class="recipe-actions">
+        <button 
+          class="action-button share-button"
+          onclick="shareRecipe()"
+          title="Share recipe to Reminders, Notes, or other apps"
+        >
+          <i class="fas fa-share-alt"></i> Share Recipe
+        </button>
+        <button 
+          class="action-button copy-button"
+          onclick="copyIngredients()"
+          title="Copy ingredients list to clipboard"
+        >
+          <i class="fas fa-clipboard-list"></i> Copy Ingredients
+        </button>
+      </div>
+
       <div class="recipe-content">
         <slot />
       </div>
 
-
-      
       <!-- Calendar Integration -->
       <CalendarIntegration 
         title={title}
@@ -92,30 +92,140 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>This Is How We Do It</h3>
-          <p>Our family's digital cookbook and planning space</p>
-        </div>
-        <div class="footer-section">
-          <h4>Quick Links</h4>
-          <ul>
-            <li><a href={`${import.meta.env.BASE_URL}/`}>Home</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}/recipes`}>All Recipes</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}/tips`}>Cooking Tips</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; 2025 This Is How We Do It. Made with ❤️ for family cooking.</p>
-      </div>
-    </div>
-  </footer>
+  <Footer />
 
   <script src={`${import.meta.env.BASE_URL}/script.js`} is:inline></script>
+  
+  <script is:inline>
+    // Share Recipe function - uses native Web Share API
+    async function shareRecipe() {
+      const title = document.querySelector('h1').textContent;
+      const url = window.location.href;
+      
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: title,
+            text: `Check out this recipe: ${title}`,
+            url: url
+          });
+        } catch (err) {
+          // User cancelled or error occurred
+          if (err.name !== 'AbortError') {
+            console.error('Share failed:', err);
+            fallbackShare(url);
+          }
+        }
+      } else {
+        // Fallback: copy URL to clipboard
+        fallbackShare(url);
+      }
+    }
+
+    function fallbackShare(url) {
+      navigator.clipboard.writeText(url).then(() => {
+        alert('Recipe link copied to clipboard!');
+      }).catch(() => {
+        alert('Please copy this URL: ' + url);
+      });
+    }
+
+    // Copy Ingredients function - extracts and copies ingredient list
+    function copyIngredients() {
+      const button = event.target.closest('.copy-button');
+      const originalHTML = button.innerHTML;
+      
+      try {
+        // Find the Ingredients section
+        const headings = Array.from(document.querySelectorAll('h2, h3, h4'));
+        const ingredientsHeading = headings.find(h => /🧂|ingredients/i.test(h.textContent));
+        
+        if (!ingredientsHeading) {
+          alert('Could not find ingredients section');
+          return;
+        }
+
+        // Collect all list items until we hit Tools or Instructions
+        let items = [];
+        let el = ingredientsHeading.nextElementSibling;
+        
+        while (el) {
+          // Stop if we hit another h2 heading (Tools, Instructions, etc.)
+          if (el.tagName === 'H2') break;
+          
+          // Skip h3 headings that say "Tools"
+          if (el.tagName === 'H3' && /tools/i.test(el.textContent)) {
+            // Skip to next element after this tools section
+            el = el.nextElementSibling;
+            continue;
+          }
+          
+          // Collect list items from ul/ol
+          if (el.tagName === 'UL' || el.tagName === 'OL') {
+            const listItems = el.querySelectorAll('li');
+            listItems.forEach(li => {
+              const text = li.innerText.trim();
+              if (text) items.push(text);
+            });
+          }
+          
+          el = el.nextElementSibling;
+        }
+
+        if (items.length === 0) {
+          alert('No ingredients found');
+          return;
+        }
+
+        // Create the text and HTML to copy
+        const recipeTitle = document.querySelector('h1').textContent;
+        const url = window.location.href;
+        
+        // Plain text version (fallback)
+        const plainText = `${recipeTitle}\n\nIngredients:\n${items.join('\n')}\n\nFrom: ${url}`;
+        
+        // HTML version (preserves list formatting for Reminders)
+        const htmlItems = items.map(item => `<li>${item}</li>`).join('');
+        const htmlContent = `<div><h1>${recipeTitle}</h1><h2>Ingredients:</h2><ul>${htmlItems}</ul><p>From: ${url}</p></div>`;
+
+        // Copy to clipboard with HTML formatting
+        const clipboardItem = new ClipboardItem({
+          'text/html': new Blob([htmlContent], { type: 'text/html' }),
+          'text/plain': new Blob([plainText], { type: 'text/plain' })
+        });
+
+        navigator.clipboard.write([clipboardItem]).then(() => {
+          // Visual feedback
+          button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          button.classList.add('copied');
+          
+          setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.classList.remove('copied');
+          }, 2000);
+        }).catch(err => {
+          console.error('Copy failed:', err);
+          // Fallback to plain text if HTML copy fails
+          navigator.clipboard.writeText(plainText).then(() => {
+            button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            button.classList.add('copied');
+            setTimeout(() => {
+              button.innerHTML = originalHTML;
+              button.classList.remove('copied');
+            }, 2000);
+          }).catch(() => {
+            alert('Could not copy to clipboard. Please try again.');
+          });
+        });
+
+      } catch (err) {
+        console.error('Error extracting ingredients:', err);
+        alert('Error extracting ingredients. Please try again.');
+      }
+    }
+
+    // Interactive ingredients removed per user request
+  </script>
 </body>
 </html>
 
@@ -191,6 +301,56 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   }
 
+  .recipe-actions {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin: 1.5rem 0;
+    padding: 0 1rem;
+    flex-wrap: wrap;
+  }
+
+  .action-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: white;
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    border: none;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    font-family: inherit;
+  }
+
+  .share-button {
+    background: linear-gradient(135deg, #8fbc8f 0%, #6b9e6b 100%);
+  }
+
+  .share-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #6b9e6b 0%, #8fbc8f 100%);
+  }
+
+  .copy-button {
+    background: linear-gradient(135deg, #cd853f 0%, #b8762f 100%);
+  }
+
+  .copy-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(135deg, #b8762f 0%, #cd853f 100%);
+  }
+
+  .copy-button.copied {
+    background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  }
+
   .recipe-content {
     max-width: 800px;
     margin: 3rem auto;
@@ -224,6 +384,7 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
     margin-bottom: 0.5rem;
   }
 
+
   @media (max-width: 768px) {
     .recipe-header h1 {
       font-size: 2rem;
@@ -241,6 +402,18 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
 
     .recipe-image img {
       max-width: 100%;
+    }
+
+    .recipe-actions {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .action-button {
+      font-size: 0.9rem;
+      padding: 0.75rem 1.25rem;
+      width: 100%;
+      max-width: 300px;
     }
   }
 </style>
