@@ -1,5 +1,9 @@
 ---
 import { getCollection } from "astro:content";
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+import RecipeCard from '../components/RecipeCard.astro';
+
 const recipes = await getCollection("recipes");
 ---
 
@@ -14,27 +18,7 @@ const recipes = await getCollection("recipes");
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 	</head>
 	<body>
-  <!-- Navigation -->
-  <nav class="navbar">
-    <div class="nav-container">
-      <div class="nav-logo">
-        <a href={`${import.meta.env.BASE_URL}/`}>
-          <i class="fas fa-utensils"></i>
-          <span>This Is How We Do It</span>
-        </a>
-      </div>
-      <div class="nav-menu" id="nav-menu">
-        <a href={`${import.meta.env.BASE_URL}/`} class="nav-link active">Home</a>
-        <a href={`${import.meta.env.BASE_URL}/recipes`} class="nav-link">All Recipes</a>
-        <a href={`${import.meta.env.BASE_URL}/tips`} class="nav-link">Cooking Tips</a>
-      </div>
-      <div class="nav-toggle" id="nav-toggle">
-        <span class="bar"></span>
-        <span class="bar"></span>
-        <span class="bar"></span>
-      </div>
-    </div>
-  </nav>
+  <Navigation activePage="home" />
 
   <!-- Hero Section -->
   <section class="hero">
@@ -69,55 +53,13 @@ const recipes = await getCollection("recipes");
       <h2 class="section-title">🍽️ Featured Recipes</h2>
       <div class="recipes-grid">
         {recipes.map(recipe => (
-          <a href={`${import.meta.env.BASE_URL}/recipes/${recipe.slug}/`} class="recipe-card">
-            {recipe.data.image && (
-              <div class="recipe-image">
-                <img src={recipe.data.image.startsWith('http') ? recipe.data.image : `${import.meta.env.BASE_URL}${recipe.data.image}`} alt={recipe.data.title} />
-              </div>
-            )}
-            <div class="recipe-card-content">
-              <h3>{recipe.data.title}</h3>
-              <div class="recipe-stats">
-                {recipe.data.prepTime && <span><i class="fas fa-clock"></i> {recipe.data.prepTime}</span>}
-                {recipe.data.servings && <span><i class="fas fa-users"></i> {recipe.data.servings}</span>}
-                {recipe.data.difficulty && <span><i class="fas fa-signal"></i> {recipe.data.difficulty}</span>}
-              </div>
-              {recipe.data.tags && recipe.data.tags.length > 0 && (
-                <div class="recipe-tags">
-                  {recipe.data.tags.slice(0, 3).map(tag => (
-                    <span class="tag">{tag}</span>
-                  ))}
-                </div>
-              )}
-            </div>
-          </a>
+          <RecipeCard recipe={recipe} variant="default" />
         ))}
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="container">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>This Is How We Do It</h3>
-          <p>Our family's digital cookbook and planning space</p>
-        </div>
-        <div class="footer-section">
-          <h4>Quick Links</h4>
-          <ul>
-            <li><a href={`${import.meta.env.BASE_URL}/`}>Home</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}/recipes`}>All Recipes</a></li>
-            <li><a href={`${import.meta.env.BASE_URL}/tips`}>Cooking Tips</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; 2025 This Is How We Do It. Made with ❤️ for family cooking.</p>
-      </div>
-    </div>
-  </footer>
+  <Footer />
 
   <!-- Recipe Submission Modal -->
   <div id="recipeModal" class="modal">
@@ -476,9 +418,6 @@ const recipes = await getCollection("recipes");
     align-items: center;
     gap: 0.5rem;
     font-size: 1rem;
-  }
-
-  .feature {
     cursor: pointer;
     transition: all 0.3s ease;
   }
@@ -532,89 +471,6 @@ const recipes = await getCollection("recipes");
     gap: 2rem;
     max-width: 1200px;
     margin: 0 auto;
-  }
-
-  .recipe-card {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.3s ease;
-    border: 1px solid rgba(143, 188, 143, 0.2);
-    position: relative;
-  }
-
-  .recipe-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #8fbc8f, #d2b48c);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .recipe-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-    border-color: rgba(143, 188, 143, 0.4);
-  }
-
-  .recipe-card:hover::before {
-    opacity: 1;
-  }
-
-  .recipe-image img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-  }
-
-  .recipe-card-content {
-    padding: 1.5rem;
-  }
-
-  .recipe-card-content h3 {
-    font-size: 1.3rem;
-    color: #8fbc8f;
-    margin-bottom: 1rem;
-  }
-
-  .recipe-stats {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-  }
-
-  .recipe-stats span {
-    background: #cd853f;
-    color: white;
-    padding: 0.3rem 0.8rem;
-    border-radius: 15px;
-    font-size: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-
-  .recipe-tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .tag {
-    background: #f5e6d3;
-    color: #5d4037;
-    padding: 0.2rem 0.6rem;
-    border-radius: 12px;
-    font-size: 0.7rem;
-    font-weight: 500;
   }
 
   /* Modal Styles */
