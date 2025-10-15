@@ -5,6 +5,53 @@ import Footer from '../components/Footer.astro';
 import RecipeCard from '../components/RecipeCard.astro';
 
 const recipes = await getCollection("recipes");
+
+// Prepare recipe data for JavaScript (with parsed times and meal types)
+const recipesData = recipes.map(recipe => {
+  // Parse time to minutes for filtering
+  const parseTime = (timeStr) => {
+    if (!timeStr) return 0;
+    let total = 0;
+    const hrMatch = timeStr.match(/(\d+)\s*hr/);
+    const minMatch = timeStr.match(/(\d+)\s*min/);
+    if (hrMatch) total += parseInt(hrMatch[1]) * 60;
+    if (minMatch) total += parseInt(minMatch[1]);
+    return total;
+  };
+
+  const totalMinutes = recipe.data.totalTime 
+    ? parseTime(recipe.data.totalTime)
+    : parseTime(recipe.data.prepTime || '') + parseTime(recipe.data.cookTime || '');
+
+  // Determine meal type based on tags
+  const tags = recipe.data.tags || [];
+  const tagString = tags.join(' ').toLowerCase();
+  let mealTypes = [];
+  
+  if (tags.includes('breakfast')) mealTypes.push('breakfast');
+  if (tags.includes('dessert') || tags.includes('no-bake') || tags.includes('cake')) mealTypes.push('snacks');
+  if (tags.includes('dinner') || tags.includes('main course') || tags.includes('turkey')) mealTypes.push('dinner');
+  if (tags.includes('side dish') || tags.includes('sauce')) mealTypes.push('lunch', 'dinner');
+  
+  // If no meal type assigned, default based on context
+  if (mealTypes.length === 0) {
+    if (tags.includes('vegetable')) mealTypes.push('lunch', 'dinner');
+    else mealTypes.push('dinner'); // default to dinner
+  }
+
+  return {
+    slug: recipe.slug,
+    title: recipe.data.title,
+    image: recipe.data.image,
+    prepTime: recipe.data.prepTime,
+    cookTime: recipe.data.cookTime,
+    servings: recipe.data.servings,
+    difficulty: recipe.data.difficulty,
+    tags: recipe.data.tags || [],
+    totalMinutes: totalMinutes,
+    mealTypes: [...new Set(mealTypes)] // remove duplicates
+  };
+});
 ---
 
 <!DOCTYPE html>
@@ -27,11 +74,105 @@ const recipes = await getCollection("recipes");
         <h1>🍽️ All Recipes</h1>
         <p>Browse our family's collection of favorite recipes</p>
       </div>
+
+      <!-- Filter Section -->
+      <div class="filters-container">
+        <!-- Search Bar -->
+        <div class="search-bar">
+          <i class="fas fa-search"></i>
+          <input 
+            type="text" 
+            id="searchInput" 
+            placeholder="Search recipes..."
+            autocomplete="off"
+          />
+          <button id="clearSearch" class="clear-search" style="display: none;">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+
+        <!-- Meal Type Filters -->
+        <div class="filter-group">
+          <h3><i class="fas fa-utensils"></i> Meal Type</h3>
+          <div class="filter-buttons">
+            <button class="filter-btn meal-filter" data-meal="breakfast">
+              🌅 Breakfast
+            </button>
+            <button class="filter-btn meal-filter" data-meal="lunch">
+              🥗 Lunch
+            </button>
+            <button class="filter-btn meal-filter" data-meal="dinner">
+              🍽️ Dinner
+            </button>
+            <button class="filter-btn meal-filter" data-meal="snacks">
+              🍰 Snacks & Desserts
+            </button>
+          </div>
+        </div>
+
+        <!-- Difficulty Filters -->
+        <div class="filter-group">
+          <h3><i class="fas fa-signal"></i> Difficulty</h3>
+          <div class="filter-buttons">
+            <button class="filter-btn difficulty-filter" data-difficulty="Easy">
+              Easy
+            </button>
+            <button class="filter-btn difficulty-filter" data-difficulty="Medium">
+              Medium
+            </button>
+            <button class="filter-btn difficulty-filter" data-difficulty="Hard">
+              Hard
+            </button>
+          </div>
+        </div>
+
+        <!-- Time Filters -->
+        <div class="filter-group">
+          <h3><i class="fas fa-clock"></i> Cooking Time</h3>
+          <div class="filter-buttons">
+            <button class="filter-btn time-filter" data-time="quick">
+              ⚡ Quick (&lt; 30 min)
+            </button>
+            <button class="filter-btn time-filter" data-time="regular">
+              ⏱️ Regular (30-60 min)
+            </button>
+            <button class="filter-btn time-filter" data-time="long">
+              🕐 Long (&gt; 60 min)
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Filters Display -->
+        <div id="activeFilters" class="active-filters" style="display: none;">
+          <div class="active-filters-content">
+            <span class="active-filters-label">Active Filters:</span>
+            <div id="activeFilterTags"></div>
+            <button id="clearAllFilters" class="clear-all-btn">
+              <i class="fas fa-times-circle"></i> Clear All
+            </button>
+          </div>
+        </div>
+
+        <!-- Results Count -->
+        <div class="results-summary">
+          <span id="resultsCount">Showing {recipes.length} of {recipes.length} recipes</span>
+        </div>
+      </div>
       
-      <div class="recipes-grid">
+      <!-- Recipes Grid -->
+      <div class="recipes-grid" id="recipesGrid">
         {recipes.map(recipe => (
-          <RecipeCard recipe={recipe} variant="link" />
+          <div class="recipe-item" data-recipe={recipe.slug}>
+            <RecipeCard recipe={recipe} variant="default" />
+          </div>
         ))}
+      </div>
+
+      <!-- No Results Message -->
+      <div id="noResults" class="no-results" style="display: none;">
+        <i class="fas fa-search"></i>
+        <h3>No recipes found</h3>
+        <p>Try adjusting your filters or search terms</p>
       </div>
     </div>
   </section>
@@ -39,6 +180,327 @@ const recipes = await getCollection("recipes");
   <Footer />
 
   <script src={`${import.meta.env.BASE_URL}/script.js`} is:inline></script>
+  
+  <script define:vars={{ recipesData }} is:inline>
+    // Store recipes data
+    const RECIPES_DATA = recipesData;
+    
+    // State management
+    let activeFilters = {
+      search: '',
+      mealTypes: new Set(),
+      difficulties: new Set(),
+      times: new Set()
+    };
+
+    // Initialize filters from URL on page load
+    function initFiltersFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      
+      // Search
+      const search = params.get('search');
+      if (search) {
+        activeFilters.search = search;
+        document.getElementById('searchInput').value = search;
+        document.getElementById('clearSearch').style.display = 'block';
+      }
+      
+      // Meal types
+      const meals = params.get('meal');
+      if (meals) {
+        meals.split(',').forEach(meal => {
+          activeFilters.mealTypes.add(meal);
+          const btn = document.querySelector(`.meal-filter[data-meal="${meal}"]`);
+          if (btn) btn.classList.add('active');
+        });
+      }
+      
+      // Difficulties
+      const difficulties = params.get('difficulty');
+      if (difficulties) {
+        difficulties.split(',').forEach(diff => {
+          activeFilters.difficulties.add(diff);
+          const btn = document.querySelector(`.difficulty-filter[data-difficulty="${diff}"]`);
+          if (btn) btn.classList.add('active');
+        });
+      }
+      
+      // Times
+      const times = params.get('time');
+      if (times) {
+        times.split(',').forEach(time => {
+          activeFilters.times.add(time);
+          const btn = document.querySelector(`.time-filter[data-time="${time}"]`);
+          if (btn) btn.classList.add('active');
+        });
+      }
+      
+      applyFilters();
+    }
+
+    // Update URL with current filters
+    function updateURL() {
+      const params = new URLSearchParams();
+      
+      if (activeFilters.search) {
+        params.set('search', activeFilters.search);
+      }
+      if (activeFilters.mealTypes.size > 0) {
+        params.set('meal', Array.from(activeFilters.mealTypes).join(','));
+      }
+      if (activeFilters.difficulties.size > 0) {
+        params.set('difficulty', Array.from(activeFilters.difficulties).join(','));
+      }
+      if (activeFilters.times.size > 0) {
+        params.set('time', Array.from(activeFilters.times).join(','));
+      }
+      
+      const newURL = params.toString() 
+        ? `${window.location.pathname}?${params.toString()}`
+        : window.location.pathname;
+      
+      window.history.replaceState({}, '', newURL);
+    }
+
+    // Filter logic
+    function filterRecipes(recipe) {
+      // Search filter
+      if (activeFilters.search) {
+        const searchLower = activeFilters.search.toLowerCase();
+        if (!recipe.title.toLowerCase().includes(searchLower)) {
+          return false;
+        }
+      }
+      
+      // Meal type filter (OR logic - match ANY selected meal type)
+      if (activeFilters.mealTypes.size > 0) {
+        const hasMatchingMeal = Array.from(activeFilters.mealTypes).some(meal => 
+          recipe.mealTypes.includes(meal)
+        );
+        if (!hasMatchingMeal) return false;
+      }
+      
+      // Difficulty filter (OR logic - match ANY selected difficulty)
+      if (activeFilters.difficulties.size > 0) {
+        if (!activeFilters.difficulties.has(recipe.difficulty)) {
+          return false;
+        }
+      }
+      
+      // Time filter (OR logic - match ANY selected time range)
+      if (activeFilters.times.size > 0) {
+        let matchesTime = false;
+        activeFilters.times.forEach(timeRange => {
+          if (timeRange === 'quick' && recipe.totalMinutes < 30) matchesTime = true;
+          if (timeRange === 'regular' && recipe.totalMinutes >= 30 && recipe.totalMinutes <= 60) matchesTime = true;
+          if (timeRange === 'long' && recipe.totalMinutes > 60) matchesTime = true;
+        });
+        if (!matchesTime) return false;
+      }
+      
+      return true;
+    }
+
+    // Apply all filters and update UI
+    function applyFilters() {
+      const recipeItems = document.querySelectorAll('.recipe-item');
+      let visibleCount = 0;
+      
+      recipeItems.forEach((item, index) => {
+        const recipe = RECIPES_DATA[index];
+        const shouldShow = filterRecipes(recipe);
+        
+        if (shouldShow) {
+          item.style.display = 'block';
+          visibleCount++;
+        } else {
+          item.style.display = 'none';
+        }
+      });
+      
+      // Update results count
+      document.getElementById('resultsCount').textContent = 
+        `Showing ${visibleCount} of ${RECIPES_DATA.length} recipes`;
+      
+      // Show/hide no results message
+      const noResults = document.getElementById('noResults');
+      const recipesGrid = document.getElementById('recipesGrid');
+      if (visibleCount === 0) {
+        noResults.style.display = 'flex';
+        recipesGrid.style.display = 'none';
+      } else {
+        noResults.style.display = 'none';
+        recipesGrid.style.display = 'grid';
+      }
+      
+      // Update active filters display
+      updateActiveFiltersDisplay();
+      updateURL();
+    }
+
+    // Update active filters display
+    function updateActiveFiltersDisplay() {
+      const hasAnyFilters = activeFilters.search || 
+                           activeFilters.mealTypes.size > 0 || 
+                           activeFilters.difficulties.size > 0 || 
+                           activeFilters.times.size > 0;
+      
+      const activeFiltersDiv = document.getElementById('activeFilters');
+      const activeFilterTags = document.getElementById('activeFilterTags');
+      
+      if (hasAnyFilters) {
+        activeFiltersDiv.style.display = 'block';
+        activeFilterTags.innerHTML = '';
+        
+        // Add search tag
+        if (activeFilters.search) {
+          const tag = createActiveFilterTag('Search', activeFilters.search, 'search');
+          activeFilterTags.appendChild(tag);
+        }
+        
+        // Add meal type filters
+        activeFilters.mealTypes.forEach(meal => {
+          const mealLabel = meal.charAt(0).toUpperCase() + meal.slice(1);
+          const tag = createActiveFilterTag('Meal', mealLabel, 'meal', meal);
+          activeFilterTags.appendChild(tag);
+        });
+        
+        // Add difficulty filters
+        activeFilters.difficulties.forEach(diff => {
+          const tag = createActiveFilterTag('Difficulty', diff, 'difficulty', diff);
+          activeFilterTags.appendChild(tag);
+        });
+        
+        // Add time filters
+        activeFilters.times.forEach(time => {
+          const timeLabel = time === 'quick' ? 'Quick' : time === 'regular' ? 'Regular' : 'Long';
+          const tag = createActiveFilterTag('Time', timeLabel, 'time', time);
+          activeFilterTags.appendChild(tag);
+        });
+      } else {
+        activeFiltersDiv.style.display = 'none';
+      }
+    }
+
+    // Create active filter tag element
+    function createActiveFilterTag(category, value, type, data) {
+      const tag = document.createElement('span');
+      tag.className = 'active-filter-tag';
+      tag.innerHTML = `<strong>${category}:</strong> ${value} <i class="fas fa-times"></i>`;
+      tag.onclick = () => removeFilter(type, data);
+      return tag;
+    }
+
+    // Remove individual filter
+    function removeFilter(type, data) {
+      switch(type) {
+        case 'search':
+          activeFilters.search = '';
+          document.getElementById('searchInput').value = '';
+          document.getElementById('clearSearch').style.display = 'none';
+          break;
+        case 'meal':
+          activeFilters.mealTypes.delete(data);
+          document.querySelector(`.meal-filter[data-meal="${data}"]`).classList.remove('active');
+          break;
+        case 'difficulty':
+          activeFilters.difficulties.delete(data);
+          document.querySelector(`.difficulty-filter[data-difficulty="${data}"]`).classList.remove('active');
+          break;
+        case 'time':
+          activeFilters.times.delete(data);
+          document.querySelector(`.time-filter[data-time="${data}"]`).classList.remove('active');
+          break;
+      }
+      applyFilters();
+    }
+
+    // Clear all filters
+    function clearAllFilters() {
+      activeFilters = {
+        search: '',
+        mealTypes: new Set(),
+        difficulties: new Set(),
+        times: new Set()
+      };
+      
+      document.getElementById('searchInput').value = '';
+      document.getElementById('clearSearch').style.display = 'none';
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      
+      applyFilters();
+    }
+
+    // Event listeners
+    document.addEventListener('DOMContentLoaded', () => {
+      // Initialize from URL
+      initFiltersFromURL();
+      
+      // Search input
+      const searchInput = document.getElementById('searchInput');
+      searchInput.addEventListener('input', (e) => {
+        activeFilters.search = e.target.value;
+        document.getElementById('clearSearch').style.display = e.target.value ? 'block' : 'none';
+        applyFilters();
+      });
+      
+      // Clear search
+      document.getElementById('clearSearch').addEventListener('click', () => {
+        activeFilters.search = '';
+        searchInput.value = '';
+        document.getElementById('clearSearch').style.display = 'none';
+        applyFilters();
+      });
+      
+      // Meal type filters
+      document.querySelectorAll('.meal-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const meal = btn.dataset.meal;
+          if (activeFilters.mealTypes.has(meal)) {
+            activeFilters.mealTypes.delete(meal);
+            btn.classList.remove('active');
+          } else {
+            activeFilters.mealTypes.add(meal);
+            btn.classList.add('active');
+          }
+          applyFilters();
+        });
+      });
+      
+      // Difficulty filters
+      document.querySelectorAll('.difficulty-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const difficulty = btn.dataset.difficulty;
+          if (activeFilters.difficulties.has(difficulty)) {
+            activeFilters.difficulties.delete(difficulty);
+            btn.classList.remove('active');
+          } else {
+            activeFilters.difficulties.add(difficulty);
+            btn.classList.add('active');
+          }
+          applyFilters();
+        });
+      });
+      
+      // Time filters
+      document.querySelectorAll('.time-filter').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const time = btn.dataset.time;
+          if (activeFilters.times.has(time)) {
+            activeFilters.times.delete(time);
+            btn.classList.remove('active');
+          } else {
+            activeFilters.times.add(time);
+            btn.classList.add('active');
+          }
+          applyFilters();
+        });
+      });
+      
+      // Clear all filters
+      document.getElementById('clearAllFilters').addEventListener('click', clearAllFilters);
+    });
+  </script>
 </body>
 </html>
 
@@ -51,7 +513,7 @@ const recipes = await getCollection("recipes");
 
   .page-header {
     text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
   }
 
   .page-header h1 {
@@ -67,6 +529,211 @@ const recipes = await getCollection("recipes");
     margin: 0 auto;
   }
 
+  /* Filters Container */
+  .filters-container {
+    max-width: 1200px;
+    margin: 0 auto 2rem;
+    background: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(143, 188, 143, 0.2);
+  }
+
+  /* Search Bar */
+  .search-bar {
+    position: relative;
+    margin-bottom: 2rem;
+  }
+
+  .search-bar i.fa-search {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8fbc8f;
+    font-size: 1.1rem;
+  }
+
+  .search-bar input {
+    width: 100%;
+    padding: 1rem 3rem 1rem 3rem;
+    border: 2px solid #e8dcc6;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s ease;
+  }
+
+  .search-bar input:focus {
+    outline: none;
+    border-color: #8fbc8f;
+    box-shadow: 0 0 0 3px rgba(143, 188, 143, 0.1);
+  }
+
+  .clear-search {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #8fbc8f;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.5rem;
+    transition: all 0.2s ease;
+  }
+
+  .clear-search:hover {
+    color: #cd853f;
+    transform: translateY(-50%) scale(1.1);
+  }
+
+  /* Filter Groups */
+  .filter-group {
+    margin-bottom: 1.5rem;
+  }
+
+  .filter-group:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .filter-group h3 {
+    font-size: 1rem;
+    color: #5d4037;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .filter-group h3 i {
+    color: #8fbc8f;
+    font-size: 0.9rem;
+  }
+
+  /* Filter Buttons */
+  .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .filter-btn {
+    background: #f5e6d3;
+    color: #5d4037;
+    border: 2px solid transparent;
+    padding: 0.65rem 1.25rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .filter-btn:hover {
+    background: #e8dcc6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .filter-btn.active {
+    background: #8fbc8f;
+    color: white;
+    border-color: #8fbc8f;
+    box-shadow: 0 4px 12px rgba(143, 188, 143, 0.3);
+  }
+
+  /* Active Filters Display */
+  .active-filters {
+    margin: 1.5rem 0;
+    padding-top: 1.5rem;
+    border-top: 2px solid #e8dcc6;
+  }
+
+  .active-filters-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .active-filters-label {
+    font-weight: 600;
+    color: #5d4037;
+  }
+
+  #activeFilterTags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    flex: 1;
+  }
+
+  .active-filter-tag {
+    background: #cd853f;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .active-filter-tag:hover {
+    background: #b8762f;
+    transform: scale(1.05);
+  }
+
+  .active-filter-tag strong {
+    font-weight: 600;
+  }
+
+  .active-filter-tag i {
+    font-size: 0.75rem;
+  }
+
+  .clear-all-btn {
+    background: #cd853f;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .clear-all-btn:hover {
+    background: #b8762f;
+    transform: translateY(-1px);
+  }
+
+  /* Results Summary */
+  .results-summary {
+    text-align: center;
+    color: #5d4037;
+    font-weight: 500;
+    padding: 1rem 0;
+    border-top: 2px solid #e8dcc6;
+    margin-top: 1.5rem;
+  }
+
+  /* Recipes Grid */
   .recipes-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
@@ -75,9 +742,70 @@ const recipes = await getCollection("recipes");
     margin: 0 auto;
   }
 
+  .recipe-item {
+    transition: opacity 0.3s ease;
+  }
+
+  /* No Results */
+  .no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    text-align: center;
+    color: #5d4037;
+  }
+
+  .no-results i {
+    font-size: 4rem;
+    color: #8fbc8f;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  .no-results h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #8fbc8f;
+  }
+
+  .no-results p {
+    font-size: 1rem;
+    opacity: 0.7;
+  }
+
+  /* Mobile Responsive */
   @media (max-width: 768px) {
     .page-header h1 {
       font-size: 2rem;
+    }
+
+    .filters-container {
+      padding: 1.5rem;
+    }
+
+    .filter-group h3 {
+      font-size: 0.9rem;
+    }
+
+    .filter-buttons {
+      gap: 0.5rem;
+    }
+
+    .filter-btn {
+      font-size: 0.9rem;
+      padding: 0.5rem 1rem;
+    }
+
+    .active-filters-content {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .clear-all-btn {
+      width: 100%;
+      justify-content: center;
     }
     
     .recipes-grid {

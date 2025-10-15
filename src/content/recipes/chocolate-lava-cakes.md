@@ -26,7 +26,7 @@ Decadent individual chocolate lava cakes with a rich, molten chocolate center �
 * 2 large egg yolks  
 * Optional toppings: ice cream, berries, and/or chocolate syrup  
 
-### Tools
+## 🛠️ Tools
 
 * 4 ramekins (6 oz each)  
 * 2 small mixing bowls  

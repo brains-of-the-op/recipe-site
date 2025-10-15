@@ -31,6 +31,13 @@ Brief description of the recipe and why it's special.
 * ¼ cup optional ingredient
 * 1 tbsp garnish
 
+## 🛠️ Tools
+
+* Stand mixer or hand mixer
+* 9×13-inch baking pan
+* Mixing bowls
+* Measuring cups and spoons
+
 ## 🔪 Instructions
 
 ### Step 1: Preparation
@@ -93,6 +100,7 @@ Brief description of the recipe and why it's special.
 
 ### Section Headers
 - `## 🧂 Ingredients`
+- `## 🛠️ Tools`
 - `## 🔪 Instructions`
 - `## 💡 Pro Tips`
 - `## 🍳 Cooking Notes`
