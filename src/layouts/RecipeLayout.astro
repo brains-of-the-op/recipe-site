@@ -165,7 +165,7 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
             const listItems = el.querySelectorAll('li');
             listItems.forEach(li => {
               const text = li.innerText.trim();
-              if (text) items.push('• ' + text);
+              if (text) items.push(text);
             });
           }
           
@@ -177,12 +177,24 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
           return;
         }
 
-        // Create the text to copy
+        // Create the text and HTML to copy
         const recipeTitle = document.querySelector('h1').textContent;
-        const ingredientsText = `${recipeTitle}\n\nIngredients:\n${items.join('\n')}\n\nFrom: ${window.location.href}`;
+        const url = window.location.href;
+        
+        // Plain text version (fallback)
+        const plainText = `${recipeTitle}\n\nIngredients:\n${items.join('\n')}\n\nFrom: ${url}`;
+        
+        // HTML version (preserves list formatting for Reminders)
+        const htmlItems = items.map(item => `<li>${item}</li>`).join('');
+        const htmlContent = `<div><h1>${recipeTitle}</h1><h2>Ingredients:</h2><ul>${htmlItems}</ul><p>From: ${url}</p></div>`;
 
-        // Copy to clipboard
-        navigator.clipboard.writeText(ingredientsText).then(() => {
+        // Copy to clipboard with HTML formatting
+        const clipboardItem = new ClipboardItem({
+          'text/html': new Blob([htmlContent], { type: 'text/html' }),
+          'text/plain': new Blob([plainText], { type: 'text/plain' })
+        });
+
+        navigator.clipboard.write([clipboardItem]).then(() => {
           // Visual feedback
           button.innerHTML = '<i class="fas fa-check"></i> Copied!';
           button.classList.add('copied');
@@ -193,7 +205,17 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
           }, 2000);
         }).catch(err => {
           console.error('Copy failed:', err);
-          alert('Could not copy to clipboard. Please try again.');
+          // Fallback to plain text if HTML copy fails
+          navigator.clipboard.writeText(plainText).then(() => {
+            button.innerHTML = '<i class="fas fa-check"></i> Copied!';
+            button.classList.add('copied');
+            setTimeout(() => {
+              button.innerHTML = originalHTML;
+              button.classList.remove('copied');
+            }, 2000);
+          }).catch(() => {
+            alert('Could not copy to clipboard. Please try again.');
+          });
         });
 
       } catch (err) {
@@ -202,103 +224,7 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
       }
     }
 
-    // Interactive Ingredients - make ingredient lists checkable
-    function initializeInteractiveIngredients() {
-      // Find the Ingredients section
-      const headings = Array.from(document.querySelectorAll('.recipe-content h2, .recipe-content h3, .recipe-content h4'));
-      const ingredientsHeading = headings.find(h => /🧂|ingredients/i.test(h.textContent));
-      
-      if (!ingredientsHeading) {
-        return;
-      }
-
-      // Mark the ingredients section and collect all lists until next h2
-      let el = ingredientsHeading.nextElementSibling;
-      const lists = [];
-      
-      while (el) {
-        if (el.tagName === 'H2') break;
-        
-        if (el.tagName === 'UL' || el.tagName === 'OL') {
-          el.classList.add('ingredients-section');
-          lists.push(el);
-        }
-        
-        el = el.nextElementSibling;
-      }
-
-      // Add checkboxes to all ingredient list items
-      lists.forEach((list, listIndex) => {
-        const items = list.querySelectorAll('li');
-        items.forEach((item, index) => {
-          // Create unique key for this ingredient
-          const itemKey = `ingredient_${window.location.pathname}_${listIndex}_${index}_${item.textContent.trim().substring(0, 30)}`;
-          const checkboxId = `ingredient-checkbox-${listIndex}-${index}`;
-          
-          // Get the original text
-          const originalText = item.innerHTML;
-          
-          // Create checkbox and label
-          const checkbox = document.createElement('input');
-          checkbox.type = 'checkbox';
-          checkbox.id = checkboxId;
-          
-          const label = document.createElement('label');
-          label.htmlFor = checkboxId;
-          label.innerHTML = originalText;
-          
-          // Load saved state
-          if (localStorage.getItem(itemKey) === 'checked') {
-            checkbox.checked = true;
-          }
-          
-          // Add change handler
-          checkbox.addEventListener('change', function() {
-            if (this.checked) {
-              localStorage.setItem(itemKey, 'checked');
-            } else {
-              localStorage.removeItem(itemKey);
-            }
-          });
-          
-          // Replace item content with checkbox + label
-          item.innerHTML = '';
-          item.appendChild(checkbox);
-          item.appendChild(label);
-        });
-      });
-
-      // Add "Clear All" button after the last ingredients list
-      if (lists.length > 0) {
-        const lastList = lists[lists.length - 1];
-        const controlsDiv = document.createElement('div');
-        controlsDiv.className = 'ingredients-controls';
-        
-        const clearBtn = document.createElement('button');
-        clearBtn.className = 'clear-ingredients-btn';
-        clearBtn.innerHTML = '<i class="fas fa-undo"></i> Clear All Checks';
-        clearBtn.addEventListener('click', function() {
-          lists.forEach((list, listIndex) => {
-            const checkboxes = list.querySelectorAll('input[type="checkbox"]');
-            checkboxes.forEach((checkbox, index) => {
-              checkbox.checked = false;
-              const itemKey = `ingredient_${window.location.pathname}_${listIndex}_${index}_${checkbox.nextElementSibling.textContent.trim().substring(0, 30)}`;
-              localStorage.removeItem(itemKey);
-            });
-          });
-        });
-        
-        controlsDiv.appendChild(clearBtn);
-        lastList.parentNode.insertBefore(controlsDiv, lastList.nextSibling);
-      }
-    }
-
-    // Initialize when page loads
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initializeInteractiveIngredients);
-    } else {
-      initializeInteractiveIngredients();
-    }
+    // Interactive ingredients removed per user request
   </script>
 </body>
 </html>
@@ -458,66 +384,6 @@ const { title, image, prepTime, cookTime, totalTime, servings, tags, difficulty,
     margin-bottom: 0.5rem;
   }
 
-  /* Interactive Ingredients */
-  .recipe-content .ingredients-section li {
-    display: flex;
-    align-items: flex-start;
-    gap: 3.5rem;
-    padding: 0.5rem;
-    margin: 0.25rem 0;
-    border-radius: 6px;
-    transition: all 0.2s ease;
-    list-style: none;
-  }
-
-  .recipe-content .ingredients-section li:hover {
-    background-color: rgba(143, 188, 143, 0.1);
-  }
-
-  .recipe-content .ingredients-section li input[type="checkbox"] {
-    margin-top: 0.25rem;
-    margin-right: 1rem;
-    width: 18px;
-    height: 18px;
-    cursor: pointer;
-    flex-shrink: 0;
-    accent-color: var(--primary-color, #8fbc8f);
-  }
-
-  .recipe-content .ingredients-section li label {
-    cursor: pointer;
-    flex: 1;
-    transition: all 0.2s ease;
-  }
-
-  .recipe-content .ingredients-section li input[type="checkbox"]:checked + label {
-    opacity: 0.6;
-    text-decoration: line-through;
-    color: #666;
-  }
-
-  .ingredients-controls {
-    margin-top: 1rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid rgba(143, 188, 143, 0.2);
-  }
-
-  .clear-ingredients-btn {
-    background: none;
-    border: 1px solid rgba(143, 188, 143, 0.4);
-    color: var(--primary-color, #8fbc8f);
-    padding: 0.4rem 0.8rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: inherit;
-  }
-
-  .clear-ingredients-btn:hover {
-    background-color: rgba(143, 188, 143, 0.1);
-    border-color: var(--primary-color, #8fbc8f);
-  }
 
   @media (max-width: 768px) {
     .recipe-header h1 {
