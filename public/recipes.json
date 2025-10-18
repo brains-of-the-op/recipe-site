@@ -187,6 +187,25 @@
     "image": "/images/recipes/apple-pie.jpg"
   },
   {
+    "slug": "pork-strip-fajitas",
+    "title": "Pork Strip Fajitas",
+    "href": "/recipe-site/recipes/pork-strip-fajitas/",
+    "prepTime": "20 min (plus marinating time)",
+    "cookTime": "15 min",
+    "totalTime": "35–55 min",
+    "servings": "4",
+    "difficulty": "Easy",
+    "tags": [
+      "pork",
+      "fajitas",
+      "mexican",
+      "skillet",
+      "quick"
+    ],
+    "mealType": "main",
+    "image": null
+  },
+  {
     "slug": "brussels-sprouts",
     "title": "Roasted Brussels Sprouts with Bacon",
     "href": "/recipe-site/recipes/brussels-sprouts/",
