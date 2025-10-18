@@ -1,6 +1,6 @@
 ---
 export interface Props {
-  activePage?: 'home' | 'recipes' | 'tips';
+  activePage?: 'home' | 'recipes' | 'tips' | 'planner';
 }
 
 const { activePage } = Astro.props;
@@ -17,6 +17,7 @@ const { activePage } = Astro.props;
     <div class="nav-menu" id="nav-menu">
       <a href={`${import.meta.env.BASE_URL}/`} class:list={["nav-link", { active: activePage === 'home' }]}>Home</a>
       <a href={`${import.meta.env.BASE_URL}/recipes`} class:list={["nav-link", { active: activePage === 'recipes' }]}>All Recipes</a>
+      <a href={`${import.meta.env.BASE_URL}/planner`} class:list={["nav-link", { active: activePage === 'planner' }]}>📅 Meal Planner</a>
       <a href={`${import.meta.env.BASE_URL}/tips`} class:list={["nav-link", { active: activePage === 'tips' }]}>Cooking Tips</a>
     </div>
     <div class="nav-toggle" id="nav-toggle">

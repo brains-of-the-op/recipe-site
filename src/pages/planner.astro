@@ -1,0 +1,1682 @@
+---
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meal Planner - This Is How We Do It</title>
+  <link rel="stylesheet" href={`${import.meta.env.BASE_URL}/styles.css`}>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+  <Navigation activePage="planner" />
+
+  <!-- Meal Planner Section -->
+  <section class="planner-section">
+    <div class="container">
+      <div class="page-header">
+        <h1>📅 Meal Planner</h1>
+        <p>Plan your week with your favorite recipes</p>
+      </div>
+
+      <!-- Planning Mode Toggle -->
+      <div class="mode-selector">
+        <button id="quickPlanBtn" class="mode-btn active">
+          <i class="fas fa-magic"></i> Quick Plan
+        </button>
+        <button id="manualPlanBtn" class="mode-btn">
+          <i class="fas fa-calendar-alt"></i> Manual Plan
+        </button>
+      </div>
+
+      <!-- Week Selector -->
+      <div class="week-selector">
+        <button id="prevWeek" class="week-nav-btn">
+          <i class="fas fa-chevron-left"></i> Previous Week
+        </button>
+        <div class="current-week">
+          <h2 id="weekDisplay">Week of <span id="weekDate"></span></h2>
+        </div>
+        <button id="nextWeek" class="week-nav-btn">
+          Next Week <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- Quick Plan Interface -->
+      <div id="quickPlanInterface" class="quick-plan-interface">
+        <div class="quick-plan-content">
+          <div class="quick-plan-header">
+            <h2><i class="fas fa-magic"></i> Quick Plan Your Week</h2>
+            <p>Select your meals and we'll create your weekly plan</p>
+          </div>
+
+          <!-- Meal Selection Categories -->
+          <div class="meal-categories">
+            <!-- Breakfast Selection -->
+            <div class="meal-category">
+              <div class="category-header">
+                <h3>🌅 Breakfast</h3>
+                <span class="selection-count">Select 2 recipes</span>
+              </div>
+              <div class="recipe-selection-grid" id="breakfastSelection" data-meal="breakfast" data-limit="2">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Lunch Selection -->
+            <div class="meal-category">
+              <div class="category-header">
+                <h3>🥗 Lunch</h3>
+                <span class="selection-count">Select 2 recipes</span>
+              </div>
+              <div class="recipe-selection-grid" id="lunchSelection" data-meal="lunch" data-limit="2">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+
+            <!-- Dinner Selection -->
+            <div class="meal-category">
+              <div class="category-header">
+                <h3>🍽️ Dinner</h3>
+                <span class="selection-count">Select 3 recipes</span>
+              </div>
+              <div class="recipe-selection-grid" id="dinnerSelection" data-meal="dinner" data-limit="3">
+                <!-- Populated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Selected Meals Summary -->
+          <div class="quick-plan-summary" id="quickPlanSummary">
+            <h3>Your Selections</h3>
+            <div class="summary-content">
+              <div class="summary-section">
+                <strong>Breakfasts:</strong>
+                <span id="summaryBreakfast" class="summary-items">None selected</span>
+              </div>
+              <div class="summary-section">
+                <strong>Lunches:</strong>
+                <span id="summaryLunch" class="summary-items">None selected</span>
+              </div>
+              <div class="summary-section">
+                <strong>Dinners:</strong>
+                <span id="summaryDinner" class="summary-items">None selected</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="quick-plan-actions">
+            <button id="applyQuickPlan" class="action-btn primary large" disabled>
+              <i class="fas fa-check"></i> Apply to Week
+            </button>
+            <button id="clearQuickPlan" class="action-btn secondary">
+              <i class="fas fa-redo"></i> Clear Selection
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Planner Layout -->
+      <div class="planner-layout" id="manualPlanInterface" style="display: none;">
+        <!-- Recipe Library Sidebar -->
+        <aside class="recipe-library">
+          <div class="library-header">
+            <h3><i class="fas fa-book"></i> Recipe Library</h3>
+            <div class="library-search">
+              <input 
+                type="text" 
+                id="librarySearch" 
+                placeholder="Search recipes..."
+                autocomplete="off"
+              />
+              <i class="fas fa-search search-icon"></i>
+            </div>
+          </div>
+
+          <!-- Filter Tags -->
+          <div class="library-filters">
+            <button class="filter-tag active" data-filter="all">All</button>
+            <button class="filter-tag" data-filter="breakfast">Breakfast</button>
+            <button class="filter-tag" data-filter="main">Main</button>
+            <button class="filter-tag" data-filter="side">Side</button>
+            <button class="filter-tag" data-filter="dessert">Dessert</button>
+          </div>
+
+          <!-- Recipe Cards -->
+          <div class="recipe-cards" id="recipeLibrary">
+            <!-- Populated by JavaScript -->
+          </div>
+        </aside>
+
+        <!-- Weekly Calendar -->
+        <main class="weekly-calendar">
+          <div class="calendar-grid" id="calendar">
+            <!-- Days populated by JavaScript -->
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="planner-actions">
+            <button id="clearPlan" class="action-btn secondary">
+              <i class="fas fa-trash"></i> Clear Plan
+            </button>
+            <button id="printPlan" class="action-btn primary">
+              <i class="fas fa-print"></i> Print Plan
+            </button>
+            <button id="exportList" class="action-btn primary">
+              <i class="fas fa-list"></i> Shopping List
+            </button>
+          </div>
+        </main>
+      </div>
+    </div>
+  </section>
+
+  <Footer />
+
+  <script src={`${import.meta.env.BASE_URL}/script.js`} is:inline></script>
+  
+  <script is:inline>
+    // State
+    let recipes = [];
+    let mealPlan = {}; // { 'Mon-breakfast': recipeSlug, ... }
+    let currentWeekStart = null;
+    let filteredRecipes = [];
+    let currentMode = 'quick'; // 'quick' or 'manual'
+    
+    // Quick Plan State
+    let quickPlanSelections = {
+      breakfast: [],
+      lunch: [],
+      dinner: []
+    };
+
+    const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    const MEALS = [
+      { key: 'breakfast', label: '🌅 Breakfast', icon: 'fa-coffee' },
+      { key: 'lunch', label: '🥗 Lunch', icon: 'fa-sandwich' },
+      { key: 'dinner', label: '🍽️ Dinner', icon: 'fa-utensils' }
+    ];
+
+    const QUICK_PLAN_LIMITS = {
+      breakfast: 2,
+      lunch: 2,
+      dinner: 3
+    };
+
+    // Initialize
+    async function init() {
+      await loadRecipes();
+      setCurrentWeek(getMonday(new Date()));
+      renderQuickPlanInterface();
+      renderCalendar();
+      renderRecipeLibrary();
+      loadMealPlan();
+      setupEventListeners();
+      setupQuickPlanListeners();
+    }
+
+    // Load recipes from JSON
+    async function loadRecipes() {
+      try {
+        const response = await fetch('/recipe-site/recipes.json');
+        recipes = await response.json();
+        filteredRecipes = [...recipes];
+        console.log(`Loaded ${recipes.length} recipes`);
+      } catch (error) {
+        console.error('Failed to load recipes:', error);
+        recipes = [];
+        filteredRecipes = [];
+      }
+    }
+
+    // Get Monday of current week
+    function getMonday(date) {
+      const d = new Date(date);
+      const day = d.getDay();
+      const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+      return new Date(d.setDate(diff));
+    }
+
+    // Set current week
+    function setCurrentWeek(date) {
+      currentWeekStart = new Date(date);
+      currentWeekStart.setHours(0, 0, 0, 0);
+      updateWeekDisplay();
+    }
+
+    // Update week display
+    function updateWeekDisplay() {
+      const weekEnd = new Date(currentWeekStart);
+      weekEnd.setDate(weekEnd.getDate() + 6);
+      
+      const options = { month: 'short', day: 'numeric', year: 'numeric' };
+      const startStr = currentWeekStart.toLocaleDateString('en-US', options);
+      const endStr = weekEnd.toLocaleDateString('en-US', options);
+      
+      document.getElementById('weekDate').textContent = `${startStr} - ${endStr}`;
+    }
+
+    // Render calendar
+    function renderCalendar() {
+      const calendar = document.getElementById('calendar');
+      calendar.innerHTML = '';
+
+      DAYS.forEach((day, dayIndex) => {
+        const dayDate = new Date(currentWeekStart);
+        dayDate.setDate(dayDate.getDate() + dayIndex);
+        
+        const dayCard = document.createElement('div');
+        dayCard.className = 'day-card';
+        
+        const dayHeader = document.createElement('div');
+        dayHeader.className = 'day-header';
+        dayHeader.innerHTML = `
+          <h4>${day}</h4>
+          <span class="day-date">${dayDate.getDate()}</span>
+        `;
+        dayCard.appendChild(dayHeader);
+
+        MEALS.forEach(meal => {
+          const mealSlot = document.createElement('div');
+          mealSlot.className = 'meal-slot';
+          mealSlot.dataset.day = day;
+          mealSlot.dataset.meal = meal.key;
+          
+          const slotKey = `${day}-${meal.key}`;
+          const assignedRecipe = mealPlan[slotKey];
+          
+          if (assignedRecipe) {
+            const recipe = recipes.find(r => r.slug === assignedRecipe);
+            if (recipe) {
+              mealSlot.innerHTML = renderMealCard(recipe, meal);
+              mealSlot.classList.add('filled');
+            } else {
+              mealSlot.innerHTML = renderEmptySlot(meal);
+            }
+          } else {
+            mealSlot.innerHTML = renderEmptySlot(meal);
+          }
+          
+          dayCard.appendChild(mealSlot);
+        });
+
+        calendar.appendChild(dayCard);
+      });
+
+      setupDragAndDrop();
+    }
+
+    // Render empty slot
+    function renderEmptySlot(meal) {
+      return `
+        <div class="meal-placeholder">
+          <i class="fas ${meal.icon}"></i>
+          <span>${meal.label}</span>
+          <small>Drop recipe here</small>
+        </div>
+      `;
+    }
+
+    // Render meal card
+    function renderMealCard(recipe, meal) {
+      const imageUrl = recipe.image ? `/recipe-site${recipe.image}` : '/recipe-site/images/placeholder-recipe.jpg';
+      return `
+        <div class="assigned-meal">
+          <div class="meal-label">${meal.label}</div>
+          <div class="meal-recipe">
+            ${recipe.image ? `<img src="${imageUrl}" alt="${recipe.title}" />` : ''}
+            <div class="meal-info">
+              <h5>${recipe.title}</h5>
+              <div class="meal-meta">
+                ${recipe.totalTime ? `<span><i class="fas fa-clock"></i> ${recipe.totalTime}</span>` : ''}
+                ${recipe.servings ? `<span><i class="fas fa-users"></i> ${recipe.servings}</span>` : ''}
+              </div>
+            </div>
+          </div>
+          <div class="meal-actions">
+            <a href="${recipe.href}" target="_blank" class="meal-action-btn" title="View Recipe">
+              <i class="fas fa-external-link-alt"></i>
+            </a>
+            <button class="meal-action-btn remove-meal" title="Remove">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Render recipe library
+    function renderRecipeLibrary() {
+      const library = document.getElementById('recipeLibrary');
+      library.innerHTML = '';
+
+      if (filteredRecipes.length === 0) {
+        library.innerHTML = '<p class="no-recipes">No recipes found</p>';
+        return;
+      }
+
+      filteredRecipes.forEach(recipe => {
+        const card = document.createElement('div');
+        card.className = 'library-recipe-card';
+        card.draggable = true;
+        card.dataset.recipeSlug = recipe.slug;
+        
+        const imageUrl = recipe.image ? `/recipe-site${recipe.image}` : null;
+        
+        card.innerHTML = `
+          ${imageUrl ? `<img src="${imageUrl}" alt="${recipe.title}" />` : '<div class="no-image"><i class="fas fa-utensils"></i></div>'}
+          <div class="library-recipe-info">
+            <h5>${recipe.title}</h5>
+            <div class="library-recipe-meta">
+              ${recipe.totalTime ? `<span><i class="fas fa-clock"></i> ${recipe.totalTime}</span>` : ''}
+              ${recipe.difficulty ? `<span class="difficulty ${recipe.difficulty.toLowerCase()}">${recipe.difficulty}</span>` : ''}
+            </div>
+            <div class="library-recipe-tags">
+              ${recipe.tags.slice(0, 2).map(tag => `<span class="tag">${tag}</span>`).join('')}
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+        
+        library.appendChild(card);
+      });
+    }
+
+    // Drag and drop handlers
+    let draggedRecipe = null;
+
+    function handleDragStart(e) {
+      draggedRecipe = e.target.dataset.recipeSlug;
+      e.target.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'copy';
+    }
+
+    function handleDragEnd(e) {
+      e.target.classList.remove('dragging');
+    }
+
+    function setupDragAndDrop() {
+      const slots = document.querySelectorAll('.meal-slot');
+      
+      slots.forEach(slot => {
+        slot.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'copy';
+          slot.classList.add('drag-over');
+        });
+
+        slot.addEventListener('dragleave', () => {
+          slot.classList.remove('drag-over');
+        });
+
+        slot.addEventListener('drop', (e) => {
+          e.preventDefault();
+          slot.classList.remove('drag-over');
+          
+          if (draggedRecipe) {
+            const day = slot.dataset.day;
+            const meal = slot.dataset.meal;
+            assignMeal(day, meal, draggedRecipe);
+          }
+        });
+
+        // Handle remove button
+        slot.addEventListener('click', (e) => {
+          if (e.target.closest('.remove-meal')) {
+            const day = slot.dataset.day;
+            const meal = slot.dataset.meal;
+            removeMeal(day, meal);
+          }
+        });
+      });
+    }
+
+    // Assign meal to slot
+    function assignMeal(day, meal, recipeSlug) {
+      const slotKey = `${day}-${meal}`;
+      mealPlan[slotKey] = recipeSlug;
+      saveMealPlan();
+      renderCalendar();
+    }
+
+    // Remove meal from slot
+    function removeMeal(day, meal) {
+      const slotKey = `${day}-${meal}`;
+      delete mealPlan[slotKey];
+      saveMealPlan();
+      renderCalendar();
+    }
+
+    // Save meal plan to localStorage
+    function saveMealPlan() {
+      const weekKey = currentWeekStart.toISOString().split('T')[0];
+      const allPlans = JSON.parse(localStorage.getItem('mealPlans') || '{}');
+      allPlans[weekKey] = mealPlan;
+      localStorage.setItem('mealPlans', JSON.stringify(allPlans));
+    }
+
+    // Load meal plan from localStorage
+    function loadMealPlan() {
+      const weekKey = currentWeekStart.toISOString().split('T')[0];
+      const allPlans = JSON.parse(localStorage.getItem('mealPlans') || '{}');
+      mealPlan = allPlans[weekKey] || {};
+      renderCalendar();
+    }
+
+    // Mode switching
+    function switchMode(mode) {
+      currentMode = mode;
+      const quickInterface = document.getElementById('quickPlanInterface');
+      const manualInterface = document.getElementById('manualPlanInterface');
+      const quickBtn = document.getElementById('quickPlanBtn');
+      const manualBtn = document.getElementById('manualPlanBtn');
+
+      if (mode === 'quick') {
+        quickInterface.style.display = 'block';
+        manualInterface.style.display = 'none';
+        quickBtn.classList.add('active');
+        manualBtn.classList.remove('active');
+      } else {
+        quickInterface.style.display = 'none';
+        manualInterface.style.display = 'grid';
+        quickBtn.classList.remove('active');
+        manualBtn.classList.add('active');
+      }
+    }
+
+    // Event listeners
+    function setupEventListeners() {
+      // Mode toggle
+      document.getElementById('quickPlanBtn').addEventListener('click', () => switchMode('quick'));
+      document.getElementById('manualPlanBtn').addEventListener('click', () => switchMode('manual'));
+
+      // Week navigation
+      document.getElementById('prevWeek').addEventListener('click', () => {
+        const newWeek = new Date(currentWeekStart);
+        newWeek.setDate(newWeek.getDate() - 7);
+        setCurrentWeek(newWeek);
+        loadMealPlan();
+        renderCalendar();
+      });
+
+      document.getElementById('nextWeek').addEventListener('click', () => {
+        const newWeek = new Date(currentWeekStart);
+        newWeek.setDate(newWeek.getDate() + 7);
+        setCurrentWeek(newWeek);
+        loadMealPlan();
+        renderCalendar();
+      });
+
+      // Search
+      document.getElementById('librarySearch').addEventListener('input', (e) => {
+        const searchTerm = e.target.value.toLowerCase();
+        filteredRecipes = recipes.filter(r => 
+          r.title.toLowerCase().includes(searchTerm) ||
+          r.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+        );
+        renderRecipeLibrary();
+      });
+
+      // Filters
+      document.querySelectorAll('.filter-tag').forEach(tag => {
+        tag.addEventListener('click', (e) => {
+          document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+          e.target.classList.add('active');
+          
+          const filter = e.target.dataset.filter;
+          if (filter === 'all') {
+            filteredRecipes = [...recipes];
+          } else {
+            filteredRecipes = recipes.filter(r => r.mealType === filter);
+          }
+          renderRecipeLibrary();
+        });
+      });
+
+      // Clear plan
+      document.getElementById('clearPlan').addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear this week\'s meal plan?')) {
+          mealPlan = {};
+          saveMealPlan();
+          renderCalendar();
+        }
+      });
+
+      // Print plan
+      document.getElementById('printPlan').addEventListener('click', () => {
+        window.print();
+      });
+
+      // Export shopping list
+      document.getElementById('exportList').addEventListener('click', exportShoppingList);
+    }
+
+    // Export shopping list
+    function exportShoppingList() {
+      const plannedRecipes = new Set(Object.values(mealPlan));
+      const recipeList = Array.from(plannedRecipes).map(slug => {
+        const recipe = recipes.find(r => r.slug === slug);
+        return recipe ? recipe.title : '';
+      }).filter(Boolean);
+
+      if (recipeList.length === 0) {
+        alert('No recipes planned for this week!');
+        return;
+      }
+
+      const weekStr = document.getElementById('weekDate').textContent;
+      let text = `Shopping List - Week of ${weekStr}\n`;
+      text += '='.repeat(50) + '\n\n';
+      text += 'Planned Recipes:\n';
+      recipeList.forEach((title, i) => {
+        text += `${i + 1}. ${title}\n`;
+      });
+      text += '\n' + '='.repeat(50) + '\n';
+      text += 'Visit each recipe page to see ingredients!\n';
+
+      // Download as text file
+      const blob = new Blob([text], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `meal-plan-${currentWeekStart.toISOString().split('T')[0]}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    // ===== QUICK PLAN FUNCTIONS =====
+
+    // Render Quick Plan Interface
+    function renderQuickPlanInterface() {
+      renderQuickPlanCategory('breakfast');
+      renderQuickPlanCategory('lunch');
+      renderQuickPlanCategory('dinner');
+      updateQuickPlanSummary();
+    }
+
+    // Render recipes for a specific meal category
+    function renderQuickPlanCategory(mealKey) {
+      const container = document.getElementById(`${mealKey}Selection`);
+      if (!container) return;
+
+      // Get recipes suitable for this meal type
+      let categoryRecipes = [];
+      
+      if (mealKey === 'breakfast') {
+        categoryRecipes = recipes.filter(r => r.mealType === 'breakfast');
+      } else if (mealKey === 'lunch') {
+        // For lunch, include mains and sides
+        categoryRecipes = recipes.filter(r => r.mealType === 'main' || r.mealType === 'side');
+      } else if (mealKey === 'dinner') {
+        // For dinner, include mains
+        categoryRecipes = recipes.filter(r => r.mealType === 'main');
+      }
+
+      // If not enough recipes, show all
+      if (categoryRecipes.length === 0) {
+        categoryRecipes = recipes.filter(r => r.mealType !== 'dessert');
+      }
+
+      container.innerHTML = '';
+
+      categoryRecipes.forEach(recipe => {
+        const isSelected = quickPlanSelections[mealKey].includes(recipe.slug);
+        const card = document.createElement('div');
+        card.className = `quick-recipe-card ${isSelected ? 'selected' : ''}`;
+        card.dataset.recipeSlug = recipe.slug;
+        card.dataset.meal = mealKey;
+
+        const imageUrl = recipe.image ? `/recipe-site${recipe.image}` : null;
+
+        card.innerHTML = `
+          <div class="quick-recipe-image">
+            ${imageUrl ? 
+              `<img src="${imageUrl}" alt="${recipe.title}" />` : 
+              `<div class="quick-recipe-placeholder"><i class="fas fa-utensils"></i></div>`
+            }
+            ${isSelected ? '<div class="selected-badge"><i class="fas fa-check-circle"></i></div>' : ''}
+          </div>
+          <div class="quick-recipe-info">
+            <h5>${recipe.title}</h5>
+            <div class="quick-recipe-meta">
+              ${recipe.totalTime ? `<span><i class="fas fa-clock"></i> ${recipe.totalTime}</span>` : ''}
+            </div>
+          </div>
+        `;
+
+        card.addEventListener('click', () => toggleQuickPlanSelection(mealKey, recipe.slug));
+        container.appendChild(card);
+      });
+    }
+
+    // Toggle recipe selection in Quick Plan
+    function toggleQuickPlanSelection(mealKey, recipeSlug) {
+      const limit = QUICK_PLAN_LIMITS[mealKey];
+      const selections = quickPlanSelections[mealKey];
+      const index = selections.indexOf(recipeSlug);
+
+      if (index > -1) {
+        // Remove selection
+        selections.splice(index, 1);
+      } else {
+        // Add selection if under limit
+        if (selections.length < limit) {
+          selections.push(recipeSlug);
+        } else {
+          // Show message that limit reached
+          const mealLabel = mealKey.charAt(0).toUpperCase() + mealKey.slice(1);
+          alert(`You can only select ${limit} ${mealLabel} recipes. Remove one to add another.`);
+          return;
+        }
+      }
+
+      renderQuickPlanCategory(mealKey);
+      updateQuickPlanSummary();
+    }
+
+    // Update Quick Plan summary
+    function updateQuickPlanSummary() {
+      const summaryBreakfast = document.getElementById('summaryBreakfast');
+      const summaryLunch = document.getElementById('summaryLunch');
+      const summaryDinner = document.getElementById('summaryDinner');
+      const applyBtn = document.getElementById('applyQuickPlan');
+
+      // Update breakfast summary
+      if (quickPlanSelections.breakfast.length > 0) {
+        const titles = quickPlanSelections.breakfast.map(slug => {
+          const recipe = recipes.find(r => r.slug === slug);
+          return recipe ? recipe.title : '';
+        }).filter(Boolean);
+        summaryBreakfast.textContent = titles.join(', ');
+      } else {
+        summaryBreakfast.textContent = 'None selected';
+      }
+
+      // Update lunch summary
+      if (quickPlanSelections.lunch.length > 0) {
+        const titles = quickPlanSelections.lunch.map(slug => {
+          const recipe = recipes.find(r => r.slug === slug);
+          return recipe ? recipe.title : '';
+        }).filter(Boolean);
+        summaryLunch.textContent = titles.join(', ');
+      } else {
+        summaryLunch.textContent = 'None selected';
+      }
+
+      // Update dinner summary
+      if (quickPlanSelections.dinner.length > 0) {
+        const titles = quickPlanSelections.dinner.map(slug => {
+          const recipe = recipes.find(r => r.slug === slug);
+          return recipe ? recipe.title : '';
+        }).filter(Boolean);
+        summaryDinner.textContent = titles.join(', ');
+      } else {
+        summaryDinner.textContent = 'None selected';
+      }
+
+      // Enable/disable apply button
+      const totalSelected = quickPlanSelections.breakfast.length + 
+                           quickPlanSelections.lunch.length + 
+                           quickPlanSelections.dinner.length;
+      const totalRequired = QUICK_PLAN_LIMITS.breakfast + QUICK_PLAN_LIMITS.lunch + QUICK_PLAN_LIMITS.dinner;
+      
+      applyBtn.disabled = totalSelected !== totalRequired;
+    }
+
+    // Apply Quick Plan to calendar
+    function applyQuickPlan() {
+      // Clear current week's plan
+      mealPlan = {};
+
+      // Distribute breakfast recipes (2 recipes across 7 days)
+      const breakfastDays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+      quickPlanSelections.breakfast.forEach((slug, index) => {
+        // Recipe 1: Mon, Wed, Fri, Sun
+        // Recipe 2: Tue, Thu, Sat
+        const daysForRecipe = index === 0 ? 
+          ['Monday', 'Wednesday', 'Friday', 'Sunday'] : 
+          ['Tuesday', 'Thursday', 'Saturday'];
+        
+        daysForRecipe.forEach(day => {
+          mealPlan[`${day}-breakfast`] = slug;
+        });
+      });
+
+      // Distribute lunch recipes (2 recipes across 7 days)
+      quickPlanSelections.lunch.forEach((slug, index) => {
+        const daysForRecipe = index === 0 ?
+          ['Monday', 'Tuesday', 'Wednesday', 'Thursday'] :
+          ['Friday', 'Saturday', 'Sunday'];
+        
+        daysForRecipe.forEach(day => {
+          mealPlan[`${day}-lunch`] = slug;
+        });
+      });
+
+      // Distribute dinner recipes (3 recipes across 7 days)
+      const dinnerAssignments = [
+        ['Monday', 'Thursday'],      // Recipe 1
+        ['Tuesday', 'Friday'],        // Recipe 2
+        ['Wednesday', 'Saturday', 'Sunday'] // Recipe 3
+      ];
+
+      quickPlanSelections.dinner.forEach((slug, index) => {
+        dinnerAssignments[index].forEach(day => {
+          mealPlan[`${day}-dinner`] = slug;
+        });
+      });
+
+      // Save and switch to manual view
+      saveMealPlan();
+      renderCalendar();
+      switchMode('manual');
+      
+      // Show success message
+      alert('✅ Your week has been planned! Switch to Manual Plan to see and adjust it.');
+    }
+
+    // Clear Quick Plan selections
+    function clearQuickPlan() {
+      quickPlanSelections = {
+        breakfast: [],
+        lunch: [],
+        dinner: []
+      };
+      renderQuickPlanInterface();
+    }
+
+    // Setup Quick Plan event listeners
+    function setupQuickPlanListeners() {
+      document.getElementById('applyQuickPlan').addEventListener('click', applyQuickPlan);
+      document.getElementById('clearQuickPlan').addEventListener('click', clearQuickPlan);
+    }
+
+    // Start the app
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
+
+<style>
+  .planner-section {
+    padding: 2rem 0;
+    min-height: 100vh;
+    margin-top: 80px;
+    background: linear-gradient(135deg, #faf8f5 0%, #f5f0e8 100%);
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .page-header h1 {
+    font-size: 2.5rem;
+    color: #8fbc8f;
+    margin-bottom: 0.5rem;
+  }
+
+  .page-header p {
+    font-size: 1.1rem;
+    color: #5d4037;
+  }
+
+  /* Mode Selector */
+  .mode-selector {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .mode-btn {
+    background: white;
+    color: #5d4037;
+    border: 2px solid #e8dcc6;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .mode-btn:hover {
+    border-color: #8fbc8f;
+    transform: translateY(-2px);
+  }
+
+  .mode-btn.active {
+    background: #8fbc8f;
+    color: white;
+    border-color: #8fbc8f;
+    box-shadow: 0 4px 12px rgba(143, 188, 143, 0.3);
+  }
+
+  /* Quick Plan Interface */
+  .quick-plan-interface {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .quick-plan-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .quick-plan-header {
+    text-align: center;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid #e8dcc6;
+  }
+
+  .quick-plan-header h2 {
+    font-size: 2rem;
+    color: #8fbc8f;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+  }
+
+  .quick-plan-header p {
+    color: #5d4037;
+    font-size: 1.1rem;
+  }
+
+  /* Meal Categories */
+  .meal-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .meal-category {
+    background: #f9f6f2;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid #e8dcc6;
+  }
+
+  .category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid #e8dcc6;
+  }
+
+  .category-header h3 {
+    font-size: 1.4rem;
+    color: #5d4037;
+    font-weight: 600;
+    margin: 0;
+  }
+
+  .selection-count {
+    font-size: 0.9rem;
+    color: #888;
+    font-weight: 500;
+    background: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 12px;
+  }
+
+  /* Recipe Selection Grid */
+  .recipe-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+
+  .quick-recipe-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 3px solid transparent;
+    position: relative;
+  }
+
+  .quick-recipe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(143, 188, 143, 0.3);
+    border-color: #8fbc8f;
+  }
+
+  .quick-recipe-card.selected {
+    border-color: #8fbc8f;
+    box-shadow: 0 6px 16px rgba(143, 188, 143, 0.4);
+    background: linear-gradient(135deg, #ffffff 0%, #f0fff0 100%);
+  }
+
+  .quick-recipe-image {
+    position: relative;
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    background: #f5e6d3;
+  }
+
+  .quick-recipe-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .quick-recipe-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #e8dcc6 0%, #f5e6d3 100%);
+    color: #8fbc8f;
+    font-size: 2.5rem;
+  }
+
+  .selected-badge {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: #8fbc8f;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    animation: popIn 0.3s ease;
+  }
+
+  @keyframes popIn {
+    0% {
+      transform: scale(0);
+    }
+    50% {
+      transform: scale(1.2);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+
+  .quick-recipe-info {
+    padding: 0.75rem;
+  }
+
+  .quick-recipe-info h5 {
+    font-size: 0.95rem;
+    color: #5d4037;
+    margin: 0 0 0.5rem 0;
+    font-weight: 600;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .quick-recipe-meta {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #888;
+  }
+
+  .quick-recipe-meta i {
+    color: #8fbc8f;
+  }
+
+  /* Quick Plan Summary */
+  .quick-plan-summary {
+    background: linear-gradient(135deg, #f0fff0 0%, #faf8f5 100%);
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 2px solid #8fbc8f;
+  }
+
+  .quick-plan-summary h3 {
+    font-size: 1.2rem;
+    color: #8fbc8f;
+    margin: 0 0 1rem 0;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .summary-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .summary-section {
+    display: flex;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding: 0.75rem;
+    background: white;
+    border-radius: 8px;
+  }
+
+  .summary-section strong {
+    color: #5d4037;
+    min-width: 100px;
+    font-weight: 600;
+  }
+
+  .summary-items {
+    color: #666;
+    flex: 1;
+  }
+
+  /* Quick Plan Actions */
+  .quick-plan-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    padding-top: 1rem;
+  }
+
+  .action-btn.large {
+    padding: 1rem 3rem;
+    font-size: 1.1rem;
+  }
+
+  .action-btn.primary:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  .action-btn.primary:disabled:hover {
+    transform: none;
+  }
+
+  /* Week Selector */
+  .week-selector {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 800px;
+    margin: 0 auto 2rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .week-nav-btn {
+    background: #8fbc8f;
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .week-nav-btn:hover {
+    background: #7aa87a;
+    transform: translateY(-2px);
+  }
+
+  .current-week h2 {
+    font-size: 1.3rem;
+    color: #5d4037;
+    font-weight: 600;
+  }
+
+  #weekDate {
+    color: #8fbc8f;
+  }
+
+  /* Main Layout */
+  .planner-layout {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  /* Recipe Library Sidebar */
+  .recipe-library {
+    background: white;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    height: fit-content;
+    max-height: calc(100vh - 250px);
+    overflow-y: auto;
+    position: sticky;
+    top: 100px;
+  }
+
+  .library-header {
+    margin-bottom: 1rem;
+  }
+
+  .library-header h3 {
+    font-size: 1.2rem;
+    color: #5d4037;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .library-search {
+    position: relative;
+  }
+
+  .library-search input {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    border: 2px solid #e8dcc6;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    transition: border-color 0.2s;
+  }
+
+  .library-search input:focus {
+    outline: none;
+    border-color: #8fbc8f;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8fbc8f;
+  }
+
+  .library-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .filter-tag {
+    padding: 0.5rem 1rem;
+    border: 2px solid #e8dcc6;
+    background: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .filter-tag:hover {
+    border-color: #8fbc8f;
+  }
+
+  .filter-tag.active {
+    background: #8fbc8f;
+    color: white;
+    border-color: #8fbc8f;
+  }
+
+  /* Recipe Cards */
+  .recipe-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .library-recipe-card {
+    background: #f9f6f2;
+    border-radius: 12px;
+    padding: 0.75rem;
+    cursor: grab;
+    transition: all 0.2s;
+    display: flex;
+    gap: 0.75rem;
+    border: 2px solid transparent;
+  }
+
+  .library-recipe-card:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(143, 188, 143, 0.2);
+    border-color: #8fbc8f;
+  }
+
+  .library-recipe-card.dragging {
+    opacity: 0.5;
+    cursor: grabbing;
+  }
+
+  .library-recipe-card img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .library-recipe-card .no-image {
+    width: 60px;
+    height: 60px;
+    background: #e8dcc6;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8fbc8f;
+    font-size: 1.5rem;
+  }
+
+  .library-recipe-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .library-recipe-info h5 {
+    font-size: 0.95rem;
+    color: #5d4037;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .library-recipe-meta {
+    display: flex;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 0.25rem;
+  }
+
+  .library-recipe-meta .difficulty {
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+
+  .library-recipe-meta .difficulty.easy { background: #90ee90; color: #2d5016; }
+  .library-recipe-meta .difficulty.medium { background: #ffd700; color: #6b5002; }
+  .library-recipe-meta .difficulty.hard { background: #ff6b6b; color: #5c1414; }
+
+  .library-recipe-tags {
+    display: flex;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .library-recipe-tags .tag {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.4rem;
+    background: #e8dcc6;
+    color: #5d4037;
+    border-radius: 4px;
+  }
+
+  .no-recipes {
+    text-align: center;
+    color: #888;
+    padding: 2rem;
+  }
+
+  /* Weekly Calendar */
+  .weekly-calendar {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .day-card {
+    background: #f9f6f2;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .day-header {
+    background: linear-gradient(135deg, #8fbc8f, #7aa87a);
+    color: white;
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .day-header h4 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .day-date {
+    font-size: 1.5rem;
+    font-weight: 700;
+    opacity: 0.9;
+  }
+
+  .meal-slot {
+    min-height: 120px;
+    border-bottom: 2px dashed #e8dcc6;
+    transition: all 0.3s;
+  }
+
+  .meal-slot:last-child {
+    border-bottom: none;
+  }
+
+  .meal-slot.drag-over {
+    background: rgba(143, 188, 143, 0.1);
+    border-color: #8fbc8f;
+  }
+
+  .meal-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    color: #aaa;
+    text-align: center;
+    height: 100%;
+  }
+
+  .meal-placeholder i {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .meal-placeholder small {
+    font-size: 0.75rem;
+  }
+
+  .meal-slot.filled {
+    background: white;
+  }
+
+  .assigned-meal {
+    padding: 0.75rem;
+    position: relative;
+  }
+
+  .meal-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #8fbc8f;
+    margin-bottom: 0.5rem;
+  }
+
+  .meal-recipe {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .meal-recipe img {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 8px;
+  }
+
+  .meal-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .meal-info h5 {
+    font-size: 0.95rem;
+    color: #5d4037;
+    margin-bottom: 0.25rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .meal-meta {
+    display: flex;
+    gap: 0.75rem;
+    font-size: 0.75rem;
+    color: #888;
+  }
+
+  .meal-actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .meal-action-btn {
+    background: white;
+    border: 1px solid #e8dcc6;
+    padding: 0.4rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #5d4037;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+  }
+
+  .meal-action-btn:hover {
+    background: #8fbc8f;
+    color: white;
+    border-color: #8fbc8f;
+  }
+
+  .meal-action-btn.remove-meal:hover {
+    background: #ff6b6b;
+    border-color: #ff6b6b;
+  }
+
+  /* Action Buttons */
+  .planner-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .action-btn {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .action-btn.primary {
+    background: #8fbc8f;
+    color: white;
+  }
+
+  .action-btn.primary:hover {
+    background: #7aa87a;
+    transform: translateY(-2px);
+  }
+
+  .action-btn.secondary {
+    background: white;
+    color: #5d4037;
+    border: 2px solid #e8dcc6;
+  }
+
+  .action-btn.secondary:hover {
+    border-color: #cd853f;
+    color: #cd853f;
+  }
+
+  /* Print Styles */
+  @media print {
+    .planner-section {
+      margin-top: 0;
+      background: white;
+    }
+
+    .week-selector,
+    .recipe-library,
+    .planner-actions,
+    header,
+    footer {
+      display: none !important;
+    }
+
+    .planner-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .meal-actions {
+      display: none;
+    }
+
+    .calendar-grid {
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+    }
+
+    .day-card {
+      break-inside: avoid;
+    }
+  }
+
+  /* Mobile Responsive */
+  @media (max-width: 1024px) {
+    .planner-layout {
+      grid-template-columns: 1fr;
+    }
+
+    .recipe-library {
+      position: static;
+      max-height: 400px;
+    }
+
+    .calendar-grid {
+      grid-template-columns: 1fr;
+    }
+
+    /* Quick Plan Responsive */
+    .recipe-selection-grid {
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .page-header h1 {
+      font-size: 2rem;
+    }
+
+    .mode-selector {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .mode-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .week-selector {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .current-week h2 {
+      font-size: 1.1rem;
+      text-align: center;
+    }
+
+    .planner-actions {
+      flex-direction: column;
+    }
+
+    .action-btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* Quick Plan Mobile */
+    .quick-plan-interface {
+      padding: 1rem;
+    }
+
+    .quick-plan-header h2 {
+      font-size: 1.5rem;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .recipe-selection-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .quick-recipe-image {
+      height: 120px;
+    }
+
+    .quick-recipe-info h5 {
+      font-size: 0.85rem;
+    }
+
+    .category-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .summary-section {
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .summary-section strong {
+      min-width: auto;
+    }
+
+    .quick-plan-actions {
+      flex-direction: column;
+    }
+  }
+</style>
+

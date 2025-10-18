@@ -1,0 +1,225 @@
+[
+  {
+    "slug": "turkey-dinner",
+    "title": "Butter-Herb Turkey Dinner",
+    "href": "/recipe-site/recipes/turkey-dinner/",
+    "prepTime": "60 min",
+    "cookTime": "5 hours",
+    "totalTime": "6.5 hours",
+    "servings": "6-10 people",
+    "difficulty": "Medium",
+    "tags": [
+      "turkey",
+      "holiday",
+      "main course",
+      "traditional"
+    ],
+    "mealType": "main",
+    "image": "/images/recipes/turkey-dinner.jpeg"
+  },
+  {
+    "slug": "brownies",
+    "title": "Chewy Brownies",
+    "href": "/recipe-site/recipes/brownies/",
+    "prepTime": "15 min",
+    "cookTime": "30 min",
+    "totalTime": "45 min",
+    "servings": "9–12 squares",
+    "difficulty": "Easy",
+    "tags": [
+      "dessert",
+      "baked",
+      "chocolate",
+      "easy"
+    ],
+    "mealType": "dessert",
+    "image": null
+  },
+  {
+    "slug": "chocolate-lava-cakes",
+    "title": "Chocolate Lava Cakes",
+    "href": "/recipe-site/recipes/chocolate-lava-cakes/",
+    "prepTime": "10 min",
+    "cookTime": "14 min",
+    "totalTime": "25 min",
+    "servings": "4–6 cakes",
+    "difficulty": "Medium",
+    "tags": [
+      "dessert",
+      "chocolate",
+      "easy",
+      "baked"
+    ],
+    "mealType": "dessert",
+    "image": "/images/recipes/lava-cakes.jpg"
+  },
+  {
+    "slug": "chocolate-raspberry-cake",
+    "title": "Chocolate Raspberry Cake",
+    "href": "/recipe-site/recipes/chocolate-raspberry-cake/",
+    "prepTime": "2 hrs active + chill time",
+    "cookTime": "26–29 min",
+    "totalTime": "6–8 hrs (includes cooling & chilling)",
+    "servings": "10–12 slices",
+    "difficulty": "Hard",
+    "tags": [
+      "dessert",
+      "cake",
+      "chocolate",
+      "raspberry",
+      "baked",
+      "special-occasion"
+    ],
+    "mealType": "dessert",
+    "image": null
+  },
+  {
+    "slug": "crispy-classic-beef-tacos-with-creamy-lime-slaw",
+    "title": "Crispy Classic Beef Tacos with Creamy Lime Slaw",
+    "href": "/recipe-site/recipes/crispy-classic-beef-tacos-with-creamy-lime-slaw/",
+    "prepTime": "20 min",
+    "cookTime": "20 min",
+    "totalTime": "40 min",
+    "servings": "4 (about 8 tacos)",
+    "difficulty": "Easy",
+    "tags": [
+      "dinner",
+      "mexican",
+      "tacos",
+      "beef",
+      "lactose-free"
+    ],
+    "mealType": "main",
+    "image": null
+  },
+  {
+    "slug": "half-and-half-loaded-tater-tot-sheet-pan",
+    "title": "Half & Half Loaded Tater Tot Sheet Pan",
+    "href": "/recipe-site/recipes/half-and-half-loaded-tater-tot-sheet-pan/",
+    "prepTime": "20 min",
+    "cookTime": "30–35 min",
+    "totalTime": "50 min",
+    "servings": "4",
+    "difficulty": "Easy",
+    "tags": [
+      "dinner",
+      "easy",
+      "sheet-pan",
+      "comfort-food",
+      "potatoes"
+    ],
+    "mealType": "main",
+    "image": "/public/images/recipes/taco-roast-tots.jpg"
+  },
+  {
+    "slug": "sex-in-a-pan",
+    "title": "Half & Half Sex in a Pan",
+    "href": "/recipe-site/recipes/sex-in-a-pan/",
+    "prepTime": "30 min",
+    "cookTime": "0 min",
+    "totalTime": "30 min + 6 hours chill",
+    "servings": "24-32 pieces (2 pans)",
+    "difficulty": "Medium",
+    "tags": [
+      "dessert",
+      "no-bake",
+      "pumpkin",
+      "chocolate",
+      "crowd-pleaser"
+    ],
+    "mealType": "dessert",
+    "image": null
+  },
+  {
+    "slug": "homemade-overnight-cinnamon-rolls",
+    "title": "Homemade Overnight Cinnamon Rolls",
+    "href": "/recipe-site/recipes/homemade-overnight-cinnamon-rolls/",
+    "prepTime": "3 hrs 30 min (includes rises)",
+    "cookTime": "25–28 min",
+    "totalTime": "4 hrs (or overnight)",
+    "servings": "12 rolls",
+    "difficulty": "Medium",
+    "tags": [
+      "breakfast",
+      "dessert",
+      "baked",
+      "yeast",
+      "make-ahead"
+    ],
+    "mealType": "breakfast",
+    "image": "/images/recipes/cinnamon-buns.jpg"
+  },
+  {
+    "slug": "carrot-swede",
+    "title": "Mashed Carrots & Swede (Rutabaga)",
+    "href": "/recipe-site/recipes/carrot-swede/",
+    "prepTime": "10-15 min",
+    "cookTime": "30-40 min",
+    "totalTime": "45-55 min",
+    "servings": "8-10 people",
+    "difficulty": "Easy",
+    "tags": [
+      "vegetable",
+      "side dish",
+      "mash",
+      "comfort food"
+    ],
+    "mealType": "side",
+    "image": null
+  },
+  {
+    "slug": "my-best-apple-pie-recipe",
+    "title": "My Best Apple Pie Recipe",
+    "href": "/recipe-site/recipes/my-best-apple-pie-recipe/",
+    "prepTime": "3 hrs (includes pie crust)",
+    "cookTime": "1 hr 5 min",
+    "totalTime": "7 hrs (includes cooling)",
+    "servings": "8–10 servings",
+    "difficulty": "Medium",
+    "tags": [
+      "dessert",
+      "baked",
+      "fruit",
+      "holiday",
+      "make-ahead"
+    ],
+    "mealType": "dessert",
+    "image": "/images/recipes/apple-pie.jpg"
+  },
+  {
+    "slug": "brussels-sprouts",
+    "title": "Roasted Brussels Sprouts with Bacon",
+    "href": "/recipe-site/recipes/brussels-sprouts/",
+    "prepTime": "10 min",
+    "cookTime": "25 min",
+    "totalTime": "35 min",
+    "servings": "6-8 people",
+    "difficulty": "Easy",
+    "tags": [
+      "vegetable",
+      "side dish",
+      "bacon",
+      "healthy"
+    ],
+    "mealType": "side",
+    "image": "/images/recipes/brussels-sprouts.svg"
+  },
+  {
+    "slug": "turkey-gravy",
+    "title": "Ultimate Turkey Gravy",
+    "href": "/recipe-site/recipes/turkey-gravy/",
+    "prepTime": "10 min",
+    "cookTime": "15-20 min",
+    "totalTime": "25-30 min",
+    "servings": "6-10 people",
+    "difficulty": "Easy",
+    "tags": [
+      "sauce",
+      "holiday",
+      "traditional",
+      "turkey"
+    ],
+    "mealType": "side",
+    "image": null
+  }
+]

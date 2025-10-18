@@ -4,7 +4,8 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "npm run build:recipes && astro build",
+    "build:recipes": "node tools/astro-data-to-recipes.cjs .astro/data-store.json public/recipes.json",
     "preview": "astro preview",
     "astro": "astro"
   },
